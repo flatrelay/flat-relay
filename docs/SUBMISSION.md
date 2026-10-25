@@ -63,17 +63,18 @@ Games · Social and Creators · Consumer and Payments · Onboarding (gas-free pa
 
 ---
 
-# Demo video script (target 100 s, screen recording + voice-over)
+# Demo video script (target 110 s, screen recording + voice-over; updated 25 Oct for the review fixes)
 
 | Time | Screen | Voice-over |
 |---|---|---|
 | 0–8 s | Landing page; hover the sun so it turns | "Sending crypto is a transfer. FLAT//RELAY makes it something to play." |
-| 8–25 s | `/create`: 5 $WIF × 2 claims, 1 day, Flat Line, message. Show "Burned (1%)". Approve + create in wallet | "Pick an amount and how many people can claim. One percent of every gift is burned, straight from $WIF's supply." |
-| 25–32 s | Share link appears; copy | "You get one link. The key is in the link itself, so no server ever holds your gift." |
-| 32–55 s | Phone-sized window, open link: "Play to open it", play 3 rounds of Flat Line (one miss is fine) | "Your friend opens it and plays Flat Line: land the sun on the horizon three times. It gets faster, and the sun drifts." |
-| 55–70 s | Reveal amount; paste an address; "Claim gas-free"; tx link | "They paste any address. No wallet app, no gas: our relayer pays it, and it can't redirect the funds." |
-| 70–82 s | "Pass it on" → prefilled `/create` | "Then they can pass it on, splitting what they got between two more people." |
-| 82–95 s | `/proof`: stats, relay map, event list; click a tx to Blockscout | "Every gift, claim and burn is on chain. The relay map draws who gifted whom." |
-| 95–100 s | `/gifts` showing a reclaimed gift | "Unclaimed $WIF comes back after expiry. Live on Robinhood Chain mainnet today." |
+| 8–18 s | Click "Try the game, free" → `/play`, land the sun once or twice | "You can try the game right now. No wallet, nothing is paid." |
+| 18–35 s | `/create`: 5 $WIF × 2 claims, 1 day, Flat Line, message. Point at "Burned: 1% added on top" and the fee note. Connect menu (Browser wallet / WalletConnect) → approve (step 1 of 2) → create (step 2 of 2) | "Pick an amount and how many people can claim. One percent is burned on top, straight from $WIF's supply. Connect with a browser wallet or WalletConnect." |
+| 35–42 s | Link appears + "How links work" list; copy | "You get one link. The key lives in the link, so no server ever holds your gift." |
+| 42–62 s | Phone-sized window, open link: message, "Play to open it" (show "Open without playing" underneath), play 3 rounds | "Your friend plays Flat Line: land the sun three times. Can't play? They can skip it." |
+| 62–75 s | Amount reveal; paste a Robinhood Chain address; "Claim gas-free"; "Sent, waiting for confirmation" → done | "They paste their address. No wallet app, no gas: our relayer pays, and it can't redirect the funds." |
+| 75–85 s | "Pass it on" → prefilled `/create` with the split | "Then they can pass it on, split between two more people." |
+| 85–100 s | `/gifts`: "Where it went" for a claimed gift; `/proof`: stats with definitions, relay map, **Longest relay chains**, an event → Blockscout | "Senders see where their gift travelled. Every gift, claim and burn is on chain, and the leaderboard tracks the longest relay chains. Our own tests are labelled." |
+| 100–110 s | `/gifts` reclaim on an expired gift, then end on landing | "Unclaimed $WIF can be reclaimed after expiry. Live on Robinhood Chain mainnet." |
 
-Recording notes: use mainnet with small amounts; 1280×800 browser + a narrow window for the phone view; close other tabs and hide the bookmarks bar; record the game in one take (practice first); keep wallet popups visible (they prove it's real).
+Recording notes: record after a few real (non-team) claims exist so Proof isn't all "team test"; mainnet, small amounts; 1280×800 window + a 375 px window for the phone view; hide bookmarks and other tabs; practise the game first; keep wallet pop-ups visible (they show it's real); don't show a full gift link on screen for longer than needed (anyone who reads it can claim).

@@ -150,3 +150,10 @@ State at 16:50 (getCampaign(3)): claimCount 1/2, remaining 1 $WIF, 54 min to exp
 ### 25 Oct 17:00, relay map (`lib/relaymap.ts`)
 - Node test, 8 synthetic events: edges creator→recipient per claim, self-claim excluded and counted, depth A0→B1→C2/D2, B and C flagged "passed it on" (funded after first receiving), C→A loop handled (no infinite BFS), longest chain 2.
 - Rendered with React server render on 6 wallets / 6 hand-offs incl. a back-loop; checked visually in the browser. Live mainnet data: 2 wallets, 2 hand-offs (#2, #3), 1 self-claim (#1) not drawn.
+
+### 25 Oct 20:52 SGT, gift #4 after the review fixes (mainnet, live site)
+| Event | Detail | Tx |
+|---|---|---|
+| CampaignCreated #4 | 1 × 1 $WIF, 0.01 $WIF burned, creator 0xBD1a…1562, block 97,599,986 | [0x6820…95d8](https://robinhoodchain.blockscout.com/tx/0x68202968ed5599a93546d35e5d351d9cc3522ab3a7134f8ae2af3104ba2395d8) |
+| Claimed #4, **gas-free** (sent by relayer 0x0F3c…a994) | 1 $WIF → 0x2847Df43434B2979CB89B4F64205724d73F4879e, block 97,601,320, status success | [0x892a…122a](https://robinhoodchain.blockscout.com/tx/0x892a45297b92b8898f53910767713d2702301ab7563ac7ba48d17041f8e6122a) |
+Recipient 0x2847…879e is a friend of the team lead (not a team wallet): **first claim by someone outside the team**, so it is not tagged "team test" on Proof. User-run click-through of the new claim screen (skip game, pending state) on the deployed build `8bc1012`. Live checks: /play 200, /opengraph-image 200 image/png, /api/relay `limits: shared`, /api/activity returns 9 events with times.
