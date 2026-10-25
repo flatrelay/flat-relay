@@ -38,7 +38,7 @@ export function ConnectButton() {
 
   return (
     <button onClick={() => disconnect()} className="flex items-center gap-2 rounded-full border border-line px-4 py-1.5 font-mono text-white" title="Disconnect">
-      {chainId === 46630 && <span className="rounded bg-yellow-400/20 px-1.5 text-[10px] text-yellow-300">TESTNET</span>}
+      {chainId === 46630 && <span className="rounded border border-white/50 px-1.5 text-[10px] text-white">TESTNET</span>}
       {short(address!)}
     </button>
   );

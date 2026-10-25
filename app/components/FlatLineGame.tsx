@@ -75,13 +75,13 @@ export function FlatLineGame({ seed, onWin }: Props) {
       >
         {/* the band */}
         <span
-          className={`absolute inset-y-0 transition-colors ${flash === 'hit' ? 'bg-flat/40' : 'bg-flat/15'}`}
+          className={`absolute inset-y-0 border-x-2 border-flat transition-colors ${flash === 'hit' ? 'bg-flat/35' : 'bg-white/[0.07]'}`}
           style={{ left: `${(r.center - r.width / 2) * 100}%`, width: `${r.width * 100}%` }}
         />
         {/* the flat horizon */}
         <span className="absolute inset-x-0 top-1/2 h-px bg-white/40" />
         {/* the sun */}
-        <div ref={sunRef} className="absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-flat shadow-[0_0_24px_6px_rgba(215,255,58,0.45)]" />
+        <div ref={sunRef} className="absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-flat shadow-[0_0_24px_6px_rgba(255,197,46,0.5)]" />
         {flash === 'miss' && <span className="absolute bottom-3 left-0 right-0 text-center text-sm text-red-300">Missed, try again</span>}
       </button>
 

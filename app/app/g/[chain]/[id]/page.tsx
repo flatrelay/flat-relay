@@ -43,7 +43,12 @@ export default function GiftPage() {
   const [gasless, setGasless] = useState<{ enabled: boolean; minRewardWif: number } | null>(null);
   const [sponsored, setSponsored] = useState(false);
 
-  useEffect(() => setFrag(parseGiftFragment(window.location.hash)), []);
+  useEffect(() => {
+    const read = () => { setFrag(parseGiftFragment(window.location.hash)); setOpened(false); setWon(null); };
+    read();
+    window.addEventListener('hashchange', read); // a new link pasted into an open tab
+    return () => window.removeEventListener('hashchange', read);
+  }, []);
 
   useEffect(() => {
     if (!chain) return;
@@ -138,8 +143,7 @@ export default function GiftPage() {
   if (doneTx && chain && campaign) {
     return (
       <Shell>
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-flat">Claimed</p>
-        <h1 className="mt-3 text-5xl font-semibold">+{fmt(campaign.perClaim)} {label}</h1>
+        <h1 className="font-wide text-5xl">+{fmt(campaign.perClaim)} {label}</h1>
         <p className="mt-3 text-muted">Sent to {short(recipient!)} on Robinhood Chain{sponsored ? ', gas paid by FLAT//RELAY' : ''}.</p>
         <a href={explorerTx(chain, doneTx)} target="_blank" rel="noreferrer" className="mt-4 inline-block font-mono text-sm text-muted hover:text-flat">
           View transaction ↗
@@ -151,7 +155,7 @@ export default function GiftPage() {
 
   return (
     <Shell>
-      {chain === 46630 && <p className="mb-4 rounded-lg border border-yellow-400/40 px-3 py-2 text-sm text-yellow-300">Testnet gift: mWIF test tokens, no real value.</p>}
+      {chain === 46630 && <p className="mb-4 rounded-lg border border-white/40 px-3 py-2 text-sm text-white">Testnet gift: mWIF test tokens, no real value.</p>}
 
       {status === 'loading' && <p className="text-muted">Opening gift…</p>}
       {status === 'badurl' && <Notice title="This link is broken" body="The gift address in the link isn't valid." />}
@@ -163,7 +167,7 @@ export default function GiftPage() {
 
       {status === 'open' && campaign && (
         <>
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-flat">You've been sent a gift</p>
+          <p className="text-lg text-muted">Someone sent you a $WIF gift.</p>
           {frag?.message && <blockquote className="mt-4 border-l-2 border-flat pl-4 text-xl">“{frag.message}”</blockquote>}
 
           {!opened ? (
@@ -179,9 +183,9 @@ export default function GiftPage() {
                   Unlocked in {(won.ms / 1000).toFixed(1)}s{won.misses ? ` with ${won.misses} miss${won.misses > 1 ? 'es' : ''}` : ', no misses'}
                 </p>
               )}
-              <h1 className="mt-6 text-6xl font-semibold">{fmt(campaign.perClaim)} <span className="text-flat">{label}</span></h1>
-              <p className="mt-2 font-mono text-xs text-muted">
-                {campaign.maxClaims - campaign.claimCount} of {campaign.maxClaims} left · expires {new Date(Number(campaign.expiry) * 1000).toLocaleDateString()}
+              <h1 className="font-wide mt-6 text-6xl">{fmt(campaign.perClaim)} {label}</h1>
+              <p className="mt-2 text-sm text-muted">
+                {campaign.maxClaims - campaign.claimCount} of {campaign.maxClaims} claims left. Expires {new Date(Number(campaign.expiry) * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}.
               </p>
 
               <div className="mt-8 space-y-3">
@@ -196,7 +200,7 @@ export default function GiftPage() {
                 )}
                 {pasteMode && pasted && !recipient && <p className="text-sm text-red-300">That doesn't look like a valid address.</p>}
                 {recipient && <p className="break-all font-mono text-xs text-muted">Sending to {recipient}</p>}
-                {already && <p className="text-sm text-yellow-300">This address has already claimed this gift.</p>}
+                {already && <p className="text-sm text-alert">This address has already claimed this gift.</p>}
               </div>
 
               {error && <p className="mt-4 rounded-xl border border-red-500/40 p-3 text-sm text-red-300">{error}</p>}
@@ -244,7 +248,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 function Notice({ title, body }: { title: string; body: string }) {
   return (
     <div>
-      <h1 className="text-3xl font-semibold">{title}</h1>
+      <h1 className="font-wide text-3xl">{title}</h1>
       <p className="mt-3 text-muted">{body}</p>
       <Link href="/create" className="mt-8 inline-block rounded-full border border-line px-5 py-2.5 hover:border-flat">Send your own gift</Link>
     </div>

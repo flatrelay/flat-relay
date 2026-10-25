@@ -3,10 +3,29 @@
 @tailwind utilities;
 
 :root { color-scheme: dark; }
-body { background: #0B0C0E; }
+body { background: #1230C7; color: #F4F1E4; }
+::selection { background: #FFC52E; color: #1230C7; }
 
 @layer components {
   .input {
-    @apply w-full rounded-xl border border-line bg-panel px-4 py-3 text-white outline-none placeholder:text-muted focus:border-flat disabled:opacity-50;
+    @apply w-full rounded-lg border border-line bg-panel px-4 py-3 text-white outline-none placeholder:text-muted/70 focus:border-flat disabled:opacity-50;
   }
+  /* Headline voice: Anybody slightly widened. Wide enough to feel 'flat', not so wide it crowds. */
+  .font-wide {
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-variation-settings: 'wdth' 106;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+  }
+  .font-narrow-ui {
+    font-variation-settings: 'wdth' 100;
+  }
+}
+
+@layer base {
+  :focus-visible { outline: 2px solid #FFC52E; outline-offset: 3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-crossing { animation: none; left: 68%; }
 }

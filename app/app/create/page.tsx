@@ -92,8 +92,7 @@ export default function CreatePage() {
   if (step === 'done') {
     return (
       <section className="mx-auto max-w-xl pt-12">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-flat">Gift created</p>
-        <h1 className="mt-3 text-4xl font-semibold">Share this link</h1>
+        <h1 className="font-wide text-4xl">Your gift is live. Share this link.</h1>
         <p className="mt-3 text-muted">
           Anyone who opens it can claim. Send it privately, in a DM or chat, not in public. The link is the key, and it is not stored anywhere else.
         </p>
@@ -114,9 +113,9 @@ export default function CreatePage() {
   const busy = step !== 'form';
   return (
     <section className="mx-auto max-w-xl pt-12">
-      <h1 className="text-4xl font-semibold">Send a $WIF gift</h1>
+      <h1 className="font-wide text-4xl">Send a $WIF gift</h1>
       <p className="mt-3 text-muted">Fund it once, share one link. 1% of the gift is burned when you create it.</p>
-      {chain === 46630 && <p className="mt-3 rounded-lg border border-yellow-400/40 px-3 py-2 text-sm text-yellow-300">Testnet: uses mWIF test tokens, not real $WIF.</p>}
+      {chain === 46630 && <p className="mt-3 rounded-lg border border-white/40 px-3 py-2 text-sm text-white">Testnet: uses mWIF test tokens, not real $WIF.</p>}
 
       <div className="mt-8 space-y-5">
         <Field label={`${tokenLabel} per claim`}>

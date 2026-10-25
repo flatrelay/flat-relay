@@ -28,7 +28,7 @@ export default async function ProofPage() {
 
   return (
     <section className="pt-10">
-      <h1 className="text-4xl font-semibold">Proof</h1>
+      <h1 className="font-wide text-4xl">Every gift, on chain</h1>
       <p className="mt-3 max-w-2xl text-muted">
         Every number here is read directly from the{' '}
         <a className="text-white underline decoration-line hover:decoration-flat" href={explorerAddress(CHAIN, escrow)} target="_blank" rel="noreferrer">
@@ -45,7 +45,7 @@ export default async function ProofPage() {
           ['$WIF burned', fmt(totalBurned)],
         ].map(([k, v]) => (
           <div key={k} className="bg-panel p-5">
-            <dt className="text-xs uppercase tracking-widest text-muted">{k}</dt>
+            <dt className="text-sm text-muted">{k}</dt>
             <dd className="mt-2 font-mono text-2xl">{v}</dd>
           </div>
         ))}
@@ -67,7 +67,7 @@ export default async function ProofPage() {
             </div>
             <div className="flex items-center gap-4 font-mono text-sm">
               <span>
-                {fmt(i.amount)} $WIF{i.kind === 'funded' && <span className="text-muted"> · {fmt(i.burned)} burned</span>}
+                {fmt(i.amount)} $WIF{i.kind === 'funded' && <span className="text-muted">, {fmt(i.burned)} burned</span>}
               </span>
               <a className="text-muted hover:text-flat" href={explorerTx(CHAIN, i.tx)} target="_blank" rel="noreferrer">
                 tx ↗
@@ -77,8 +77,8 @@ export default async function ProofPage() {
         ))}
       </ol>
 
-      <p className="mt-6 font-mono text-xs text-muted">
-        Token {short(token)} · Escrow {short(escrow)} · chain 4663
+      <p className="mt-6 text-xs text-muted">
+        Escrow contract {short(escrow)} and $WIF token {short(token)}, on Robinhood Chain (4663).
       </p>
     </section>
   );
