@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ROUNDS, isHit, makeRounds, sunAt, type Tap } from '@/lib/games/flatline';
+import { ROUNDS, isHit, makeRounds, newRunSeed, sunAt, type Tap } from '@/lib/games/flatline';
 
-type Props = { seed: number; onWin: (run: { taps: Tap[]; misses: number; ms: number }) => void };
+type Props = { seed: number; onWin: (run: { seed: number; taps: Tap[]; misses: number; ms: number }) => void };
 
 export function FlatLineGame({ seed, onWin }: Props) {
-  const rounds = useMemo(() => makeRounds(seed), [seed]);
+  // A fresh random layout every play, so patterns can't be memorised. The run seed is reported on win.
+  const runSeed = useMemo(() => newRunSeed(seed), [seed]);
+  const rounds = useMemo(() => makeRounds(runSeed), [runSeed]);
   const [round, setRound] = useState(0);
   const [flash, setFlash] = useState<'hit' | 'miss' | null>(null);
   const [misses, setMisses] = useState(0);
@@ -38,7 +40,7 @@ export function FlatLineGame({ seed, onWin }: Props) {
       setFlash('hit');
       if (round + 1 === ROUNDS) {
         done.current = true;
-        setTimeout(() => onWin({ taps: taps.current, misses, ms: Math.round(performance.now() - gameStart.current) }), 450);
+        setTimeout(() => onWin({ seed: runSeed, taps: taps.current, misses, ms: Math.round(performance.now() - gameStart.current) }), 450);
       } else {
         setTimeout(() => setRound((r) => r + 1), 350);
       }
@@ -47,7 +49,7 @@ export function FlatLineGame({ seed, onWin }: Props) {
       setFlash('miss');
     }
     setTimeout(() => setFlash(null), 300);
-  }, [round, rounds, misses, onWin]);
+  }, [round, rounds, misses, onWin, runSeed]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -85,7 +87,7 @@ export function FlatLineGame({ seed, onWin }: Props) {
         {flash === 'miss' && <span className="absolute bottom-3 left-0 right-0 text-center text-sm text-red-300">Missed, try again</span>}
       </button>
 
-      <p className="mt-3 text-center text-xs text-muted">Tap the horizon, or press Space. Three landings unlock the gift.</p>
+      <p className="mt-3 text-center text-xs text-muted">Tap the horizon, or press Space. Three landings unlock the gift. Each round is faster, and from round 2 the sun drifts.</p>
     </div>
   );
 }
