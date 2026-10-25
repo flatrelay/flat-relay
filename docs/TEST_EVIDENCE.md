@@ -139,3 +139,14 @@ Mainnet relayer 0x0F3c…a994: 0 ETH → gas-free disabled on 4663 (by design un
 - 0.002 ETH deployer → relayer `0x0F3c…a994`: [0x90ea…83bf](https://robinhoodchain.blockscout.com/tx/0x90eacdfc71163919dc7f01f2ba28276c57ecfdef19b624c856eb949ce2ec83bf), block 97,441,452, status 1.
 - Live https://flat-relay.vercel.app/api/relay → `4663: enabled true`, `46630: enabled true`. Deployer mainnet ETH left ≈ 0.00101.
 
+
+### 25 Oct 16:50, refund test gift #3 (mainnet, via the live UI)
+| Event | Detail | Tx |
+|---|---|---|
+| CampaignCreated #3 (`/create`, 1-hour expiry) | 2 × 1 $WIF, **0.02 $WIF burned**, creator 0xBD1a…1562, signer 0xbd2c…13d0, expiry 1792921503 (25 Oct 17:45:03 SGT), block 97,459,699 | [0x433d…6c91](https://robinhoodchain.blockscout.com/tx/0x433dd40d34abd0449d7c344e17e4c8bce5efe891e684a36367a33617a3eb6c91) |
+| Claimed #3, **gas-free** (relayer 0x0F3c…a994 submitted) | 1 $WIF → 0xe298…8051, block 97,460,788 | [0x4389…7766](https://robinhoodchain.blockscout.com/tx/0x438961f919f6e6a75606de455069d15eae79505f640fd9f6463cf1d399ac7766) |
+State at 16:50 (getCampaign(3)): claimCount 1/2, remaining 1 $WIF, 54 min to expiry. First **mainnet gas-free claim**. Refund: _pending, after 17:45 SGT via /gifts_.
+
+### 25 Oct 17:00, relay map (`lib/relaymap.ts`)
+- Node test, 8 synthetic events: edges creator→recipient per claim, self-claim excluded and counted, depth A0→B1→C2/D2, B and C flagged "passed it on" (funded after first receiving), C→A loop handled (no infinite BFS), longest chain 2.
+- Rendered with React server render on 6 wallets / 6 hand-offs incl. a back-loop; checked visually in the browser. Live mainnet data: 2 wallets, 2 hand-offs (#2, #3), 1 self-claim (#1) not drawn.

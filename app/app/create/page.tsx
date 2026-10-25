@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatUnits, parseEventLogs, parseUnits, type Hex } from 'viem';
 import { useAccount, useSwitchChain, useWriteContract } from 'wagmi';
 import { explorerTx, type SupportedChainId } from '@/lib/chains';
@@ -36,6 +36,20 @@ export default function CreatePage() {
   const [link, setLink] = useState('');
   const [txs, setTxs] = useState<{ label: string; hash: Hex }[]>([]);
   const [copied, setCopied] = useState(false);
+  const [from, setFrom] = useState<string | null>(null);
+
+  // "Pass it on" from a claim page arrives as ?per=&count=&from=<chain>-<id>. Read once on load.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const p = q.get('per'), c = q.get('count'), f = q.get('from');
+    if (p && /^\d+(\.\d+)?$/.test(p)) setPer(p);
+    if (c && /^\d+$/.test(c)) setCount(c);
+    if (f && /^\d+-\d+$/.test(f)) {
+      const id = f.split('-')[1];
+      setFrom(id);
+      setMessage((m) => m || `Passed on from gift #${id}`);
+    }
+  }, []);
 
   const calc = useMemo(() => {
     try {
@@ -121,6 +135,11 @@ export default function CreatePage() {
     <section className="mx-auto max-w-xl pt-12">
       <h1 className="font-wide text-4xl">Send a $WIF gift</h1>
       <p className="mt-3 text-muted">Fund it once, share one link. 1% of the gift is burned when you create it.</p>
+      {from && (
+        <p className="mt-3 rounded-lg border border-flat/60 px-3 py-2 text-sm text-white">
+          Passing on gift #{from}. The amounts are a suggestion based on what you received; change anything you like.
+        </p>
+      )}
       {chain === 46630 && <p className="mt-3 rounded-lg border border-white/40 px-3 py-2 text-sm text-white">Testnet: uses mWIF test tokens, not real $WIF.</p>}
 
       <div className="mt-8 space-y-5">

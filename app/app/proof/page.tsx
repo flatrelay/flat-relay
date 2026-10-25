@@ -1,6 +1,8 @@
 import { formatUnits } from 'viem';
 import { DEPLOYMENTS, fetchActivity, type ActivityItem } from '@/lib/relay';
 import { explorerAddress, explorerTx } from '@/lib/chains';
+import { buildRelayGraph } from '@/lib/relaymap';
+import { RelayMap } from '@/components/RelayMap';
 
 export const revalidate = 30; // seconds; data comes straight from the chain
 
@@ -25,6 +27,7 @@ export default async function ProofPage() {
   const totalBurned = funded.reduce((s, i) => s + (i.kind === 'funded' ? i.burned : 0n), 0n);
   const totalClaimed = claims.reduce((s, i) => s + i.amount, 0n);
   const wallets = new Set(claims.map((c) => c.actor.toLowerCase())).size;
+  const graph = buildRelayGraph(items);
 
   return (
     <section className="pt-10">
@@ -54,7 +57,22 @@ export default async function ProofPage() {
 
       {error && <p className="mt-6 rounded-xl border border-red-500/40 p-4 text-red-300">Chain read failed: {error}</p>}
 
-      <ol className="mt-10 divide-y divide-line border-y border-line">
+      <h2 id="map" className="mt-14 text-xl font-semibold">Relay map</h2>
+      <p className="mt-2 max-w-2xl text-muted">
+        Who gifted whom. Each line is one claim, left to right by generation. Yellow wallets have sent a gift;
+        the bigger dots received one first and then passed it on.
+      </p>
+      <p className="mt-2 font-mono text-sm text-muted">
+        {graph.nodes.length} wallets · {graph.edges.length} hand-off{graph.edges.length === 1 ? '' : 's'} · longest chain {graph.longestChain} · {graph.relayers} passed it on
+        {graph.selfClaims > 0 && ` · ${graph.selfClaims} self-claim${graph.selfClaims === 1 ? '' : 's'} not drawn`}
+      </p>
+      <div className="mt-4">
+        <RelayMap graph={graph} chain={CHAIN} />
+      </div>
+
+      <h2 className="mt-14 text-xl font-semibold">All events</h2>
+
+      <ol className="mt-4 divide-y divide-line border-y border-line">
         {items.length === 0 && !error && <li className="py-6 text-muted">No activity yet.</li>}
         {items.map((i) => (
           <li key={`${i.tx}-${i.kind}`} className="flex flex-wrap items-center justify-between gap-2 py-4">

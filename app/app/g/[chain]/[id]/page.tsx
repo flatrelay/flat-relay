@@ -17,6 +17,18 @@ type Campaign = {
 };
 const ZERO = '0x0000000000000000000000000000000000000000';
 const fmt = (v: bigint) => Number(formatUnits(v, 18)).toLocaleString('en-US', { maximumFractionDigits: 4 });
+
+/**
+ * Prefills /create to split what you just got between two people (49% each, so with the 1% burn
+ * it fits inside what you received). Gas-free claiming needs at least 1 per claim, so small gifts
+ * suggest one claim of 1 instead.
+ */
+function passItOnHref(chain: SupportedChainId, id: bigint, perClaim: bigint) {
+  const half = Math.floor(Number(formatUnits((perClaim * 49n) / 100n, 18)) * 100) / 100;
+  const [per, count] = half >= 1 ? [half, 2] : [1, 1];
+  const q = new URLSearchParams({ per: String(per), count: String(count), from: `${chain}-${id}` });
+  return `/create?${q}`;
+}
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
 export default function GiftPage() {
@@ -148,7 +160,10 @@ export default function GiftPage() {
         <a href={explorerTx(chain, doneTx)} target="_blank" rel="noreferrer" className="mt-4 inline-block font-mono text-sm text-muted hover:text-flat">
           View transaction ↗
         </a>
-        <Link href="/create" className="mt-10 block rounded-full bg-flat py-3.5 text-center font-medium text-ink">Pass it on: send a gift</Link>
+        <Link href={passItOnHref(chain, campaignId!, campaign.perClaim)} className="mt-10 block rounded-full bg-flat py-3.5 text-center font-medium text-ink">
+          Pass it on: send a gift
+        </Link>
+        <p className="mt-3 text-center text-sm text-muted">Every hand-off shows up on the <Link href="/proof#map" className="underline">relay map</Link>.</p>
       </Shell>
     );
   }
