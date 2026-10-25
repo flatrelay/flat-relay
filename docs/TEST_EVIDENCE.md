@@ -135,3 +135,7 @@ Mainnet relayer 0x0F3c…a994: 0 ETH → gas-free disabled on 4663 (by design un
 - Difficulty: smallest landing window across 4,000 sample gifts = 110 ms (round 3); round 1 ≈ 300 ms.
 - Browser (localhost, testnet gift #2 with `&t=flatline`): scripted player pressed Space 3× → "Unlocked … no misses" → amount + gas-free claim shown.
 
+### 25 Oct 16:13, mainnet relayer funded
+- 0.002 ETH deployer → relayer `0x0F3c…a994`: [0x90ea…83bf](https://robinhoodchain.blockscout.com/tx/0x90eacdfc71163919dc7f01f2ba28276c57ecfdef19b624c856eb949ce2ec83bf), block 97,441,452, status 1.
+- Live https://flat-relay.vercel.app/api/relay → `4663: enabled true`, `46630: enabled true`. Deployer mainnet ETH left ≈ 0.00101.
+

@@ -13,7 +13,7 @@ _Updated 24 Oct 2026, 21:00 SGT_
 - Claude's workspace and the computer's Linux shell have no package network, so `forge` couldn't be installed. Run `forge test` on the Mac (commands in `CLAUDE.md`).
 
 ## Wallet
-- Relayer (gas-free claims): `0x0F3c330bFbC8F21951dAd6cf2e82aF96fdbEa994`, key in `app/.env.local` only. Testnet: 0.005 ETH (25 Oct 14:35). Mainnet: **not funded yet (0 ETH) → fund ~0.002 ETH before deploy/demo.**
+- Relayer (gas-free claims): `0x0F3c330bFbC8F21951dAd6cf2e82aF96fdbEa994`, key in `app/.env.local` only. Testnet: 0.005 ETH (25 Oct 14:35). Mainnet: 0.002 ETH (25 Oct 16:13) → gas-free enabled on mainnet. Deployer mainnet ETH ≈ 0.001 (top up before more mainnet ops).
 - Deployer (cast keystore `deployer`): `0xBD1abD235BfB3B27491584e07C9b4bfCa4AA1562`, 0.1 testnet ETH confirmed 24 Oct 21:30 SGT.
 - `script/GiftE2E.s.sol` replaces the TS script for e2e: signs with the keystore, no key in files.
 
@@ -44,6 +44,6 @@ _Updated 24 Oct 2026, 21:00 SGT_
 
 ## Next action (Phase 2)
 1. ~~Scaffold app, /proof live locally~~ done. ~~Deploy~~ done.
-2. ~~GitHub repo~~ public at https://github.com/flatrelay/flat-relay (pushed as `flatrelay` via fine-grained PAT, expires 24 Nov). Vercel Git integration (root dir `app`) optional; CLI deploy works. Fund mainnet relayer 0.002 ETH. Upstash for shared rate limits.
+2. ~~GitHub repo~~ public at https://github.com/flatrelay/flat-relay (pushed as `flatrelay` via fine-grained PAT, expires 24 Nov). **Vercel auto-deploys from `main`** (root dir `app`; first git deploy e94d2ae Ready 25 Oct 16:14). Commits must be authored as `flatrelay <347689687+flatrelay@users.noreply.github.com>` (set in repo git config) or Vercel ignores them. ~~Fund mainnet relayer~~ done. Next: Upstash shared rate limits; Phase 3 (design identity, relay map, refund button, refund on-chain test).
 2. Gift-mode create flow + claim page (link `#k=` key, sign in browser).
 3. `/api/relay` (gasless submit) then `/api/ticket` + first game.
