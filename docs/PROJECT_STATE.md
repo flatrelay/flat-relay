@@ -44,6 +44,6 @@ _Updated 24 Oct 2026, 21:00 SGT_
 
 ## Next action (Phase 2)
 1. ~~Scaffold app, /proof live locally~~ done. ~~Deploy~~ done.
-2. GitHub repo + Vercel Git integration (root dir `app`). Fund mainnet relayer 0.002 ETH. Upstash for shared rate limits.
+2. ~~GitHub repo~~ public at https://github.com/flatrelay/flat-relay (pushed as `flatrelay` via fine-grained PAT, expires 24 Nov). Vercel Git integration (root dir `app`) optional; CLI deploy works. Fund mainnet relayer 0.002 ETH. Upstash for shared rate limits.
 2. Gift-mode create flow + claim page (link `#k=` key, sign in browser).
 3. `/api/relay` (gasless submit) then `/api/ticket` + first game.

@@ -2,10 +2,10 @@
 
 Deadline: **2 Nov 2026 17:30 UTC** (3 Nov 01:30 SGT). Target: 2 Nov 18:00 SGT.
 
-- [ ] Live app URL works on desktop and mobile
+- [ ] Live app URL works on desktop and mobile (https://flat-relay.vercel.app live 25 Oct; mobile check pending)
 - [ ] Verified mainnet RelayEscrow on Blockscout
 - [ ] Real $WIF campaign + claim + (refund) tx hashes in `TEST_EVIDENCE.md`
-- [ ] Repo public, or `wifonrh` invited
+- [x] Repo public: https://github.com/flatrelay/flat-relay (25 Oct)
 - [ ] Demo video 90–120 s
 - [ ] One-liner, 100-word description, technical write-up
 - [ ] Categories: Games, Social and Creators, Consumer and Payments (+ Onboarding if gasless claim live)

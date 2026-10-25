@@ -12,7 +12,7 @@ Built for the [World Is Flat hackathon](https://worldisflat.fun/build).
 - **Gift mode:** the link's `#k=` fragment carries a throwaway key that signs tickets. No server involved.
 - **Open challenge mode:** a verifier replays the game before signing. This is a trusted service, and it is not Sybil-proof. See `docs/SECURITY.md`.
 
-**Live app:** https://flat-relay.vercel.app
+**Live app:** https://flat-relay.vercel.app · **Repo:** https://github.com/flatrelay/flat-relay
 
 ## Status
 Phase 1: contracts and tests. See `docs/PROJECT_STATE.md`.
