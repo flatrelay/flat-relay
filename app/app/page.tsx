@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { formatUnits } from 'viem';
 import { fetchActivity } from '@/lib/relay';
+import { HorizonSun } from '@/components/HorizonSun';
 
 export const revalidate = 60;
 
@@ -42,11 +43,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* The horizon: full-bleed, the sun crosses once and settles. */}
-      <div aria-hidden className="relative left-1/2 mt-20 h-40 w-screen -translate-x-1/2 overflow-x-clip sm:mt-24 sm:h-56">
+      {/* The horizon: full-bleed. The sun rises in and settles; hover or tap it to send it the other way. */}
+      <div aria-hidden className="relative select-none left-1/2 mt-20 h-40 w-screen -translate-x-1/2 overflow-x-clip sm:mt-24 sm:h-56">
         <div className="absolute inset-x-0 bottom-0 top-1/2 bg-panel" />
         <div className="absolute inset-x-0 top-1/2 h-px bg-white" />
-        <div className="animate-crossing absolute top-1/2 h-16 w-16 -translate-y-1/2 rounded-full bg-flat shadow-[0_0_60px_18px_rgba(255,197,46,0.35)] sm:h-24 sm:w-24" />
+        <HorizonSun />
       </div>
 
       <section className="grid gap-10 pt-12 sm:grid-cols-3">

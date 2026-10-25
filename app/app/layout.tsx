@@ -20,7 +20,8 @@ function Wordmark() {
     <Link href="/" className="group flex items-end gap-2.5" aria-label="FLAT//RELAY home">
       <span aria-hidden className="relative block h-5 w-7">
         <span className="absolute bottom-0 left-0 right-0 h-px bg-white" />
-        <span className="absolute bottom-0 left-1/2 h-3 w-6 -translate-x-1/2 rounded-t-full bg-flat transition-transform group-hover:-translate-y-0.5" />
+        {/* hover: the sun lifts and glows; click: a brighter flash */}
+        <span className="absolute bottom-0 left-1/2 h-3 w-6 -translate-x-1/2 rounded-t-full bg-flat transition-[transform,box-shadow,filter] duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[0_0_14px_4px_rgba(255,197,46,0.65)] group-focus-visible:shadow-[0_0_14px_4px_rgba(255,197,46,0.65)] group-active:brightness-125 group-active:shadow-[0_0_22px_8px_rgba(255,197,46,0.9)]" />
       </span>
       <span className="text-sm font-semibold leading-none tracking-wide">FLAT//RELAY</span>
     </Link>
