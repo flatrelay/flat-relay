@@ -63,10 +63,13 @@ export function relayChains(items: ActivityItem[], limit = 5): RelayChain[] {
   return Array.from(byPath.values());
 }
 
-/** Where a wallet's received $WIF went next: wallets reached by later gifts, and the longest onward chain. */
-export function downstream(items: ActivityItem[], wallet: string, afterBlock: bigint): { reached: number; depth: number } {
-  const edges = claimEdges(items);
+/**
+ * Everyone a wallet's received $WIF reached next: wallets that claimed its later gifts, then theirs, and so on.
+ * Each step must come after the wallet received (block order), so it follows the money forward in time.
+ */
+function reachFrom(edges: MapEdge[], wallet: string, afterBlock: bigint) {
   const seen = new Set<string>([wallet.toLowerCase()]);
+  const gifts = new Set<string>();
   let frontier: { w: string; after: bigint; d: number }[] = [{ w: wallet.toLowerCase(), after: afterBlock, d: 0 }];
   let depth = 0;
   while (frontier.length) {
@@ -75,6 +78,7 @@ export function downstream(items: ActivityItem[], wallet: string, afterBlock: bi
       for (const e of edges) {
         if (e.from === f.w && e.block > f.after && !seen.has(e.to)) {
           seen.add(e.to);
+          gifts.add(e.campaignId.toString());
           depth = Math.max(depth, f.d + 1);
           next.push({ w: e.to, after: e.block, d: f.d + 1 });
         }
@@ -82,7 +86,67 @@ export function downstream(items: ActivityItem[], wallet: string, afterBlock: bi
     }
     frontier = next;
   }
-  return { reached: seen.size - 1, depth };
+  seen.delete(wallet.toLowerCase());
+  return { wallets: seen, gifts, depth };
+}
+
+/** Where a wallet's received $WIF went next: wallets reached by later gifts, and the longest onward chain. */
+export function downstream(items: ActivityItem[], wallet: string, afterBlock: bigint): { reached: number; depth: number } {
+  const r = reachFrom(claimEdges(items), wallet, afterBlock);
+  return { reached: r.wallets.size, depth: r.depth };
+}
+
+/**
+ * Widest reach: for each gift, how many different wallets it reached in the end. That is its own claimers,
+ * plus everyone reached by gifts those claimers funded afterwards, and so on. Also the $WIF burned along the way
+ * (1% of every gift in that tree). Ranked by wallets reached, then generations, then oldest first.
+ */
+export type ReachRow = { gift: string; creator: string; reached: number; generations: number; gifts: string[]; burned: bigint };
+export function widestReach(items: ActivityItem[], limit = 5): ReachRow[] {
+  const edges = claimEdges(items);
+  const burnedOf = new Map<string, bigint>();
+  const display = new Map<string, string>();
+  for (const i of items) {
+    display.set(i.actor.toLowerCase(), i.actor);
+    if (i.kind === 'funded') burnedOf.set(i.campaignId.toString(), i.burned);
+  }
+  const rows: (ReachRow & { block: bigint })[] = [];
+  for (const f of items) {
+    if (f.kind !== 'funded') continue;
+    const id = f.campaignId.toString();
+    const direct = edges.filter((e) => e.campaignId.toString() === id);
+    if (!direct.length) continue;
+    const wallets = new Set<string>();
+    const gifts = new Set<string>([id]);
+    let generations = 1;
+    for (const e of direct) {
+      wallets.add(e.to);
+      const r = reachFrom(edges, e.to, e.block);
+      r.wallets.forEach((w) => wallets.add(w));
+      r.gifts.forEach((g) => gifts.add(g));
+      generations = Math.max(generations, 1 + r.depth);
+    }
+    wallets.delete(f.actor.toLowerCase()); // a gift that comes back round to its sender doesn't count them
+    const giftList = Array.from(gifts).sort((x, y) => Number(x) - Number(y));
+    rows.push({
+      gift: id, creator: display.get(f.actor.toLowerCase()) ?? f.actor, reached: wallets.size, generations, gifts: giftList,
+      burned: giftList.reduce((s, g) => s + (burnedOf.get(g) ?? 0n), 0n), block: f.block,
+    });
+  }
+  return rows
+    .filter((r) => r.reached > 0)
+    .sort((a, b) => b.reached - a.reached || b.generations - a.generations || Number(a.block - b.block))
+    .slice(0, limit)
+    .map(({ block: _block, ...r }) => r);
+}
+
+/**
+ * Activity with our own wallets taken out, for rankings: drops gifts our wallets funded (and all their claims),
+ * and claims made by our wallets. What's left are hand-offs between outside wallets only.
+ */
+export function withoutWallets(items: ActivityItem[], isExcluded: (a: string) => boolean): ActivityItem[] {
+  const excludedGifts = new Set(items.filter((i) => i.kind === 'funded' && isExcluded(i.actor)).map((i) => i.campaignId.toString()));
+  return items.filter((i) => !excludedGifts.has(i.campaignId.toString()) && !(i.kind === 'claimed' && isExcluded(i.actor)));
 }
 
 const MAX_EDGES = 80; // keep the drawing readable; the full list is below it on /proof

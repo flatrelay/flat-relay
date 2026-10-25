@@ -60,6 +60,7 @@ Fill from `TEST_EVIDENCE.md` at submission time: gifts created, claims (incl. ga
 - **Not built yet.** It would be a new contract holding funds, so it gets its own tests and review before mainnet.
 
 Also next:
+- **Leaderboard seasons with prizes:** time-boxed seasons on the Longest chains and Widest reach boards, with the winners' prizes paid as new gifts (so even prizes get passed on). Prizes invite farming between your own wallets, so seasons come only with clear rules: outside wallets only and a minimum gift size, with winners checkable on chain.
 - **Open-challenge mode:** public links where the server replays the game before issuing a claim ticket (the replay check already exists in the code).
 - **More games:** more templates on the same escrow.
 
@@ -85,7 +86,7 @@ Games · Social and Creators · Consumer and Payments · Onboarding (gas-free pa
 | 42–62 s | Phone-sized window, open link: message, "Play to open it" (show "Open without playing" underneath), play 3 rounds | "Your friend plays Flat Line: land the sun three times. Can't play? They can skip it." |
 | 62–75 s | Amount reveal; paste a Robinhood Chain address; "Claim gas-free"; "Sent, waiting for confirmation" → done | "They paste their address. No wallet app, no gas: our relayer pays, and it can't redirect the funds." |
 | 75–85 s | "Pass it on" → prefilled `/create` with the split | "Then they can pass it on, split between two more people." |
-| 85–100 s | `/gifts`: "Where it went" for a claimed gift; `/proof`: stats with definitions, relay map, **Longest relay chains**, an event → Blockscout | "Senders see where their gift travelled. Every gift, claim and burn is on chain, and the leaderboard tracks the longest relay chains. Our own tests are labelled." |
+| 85–100 s | `/gifts`: "Where it went" for a claimed gift; `/proof`: stats with definitions, relay map, **Leaderboard** (Longest chains / Widest reach, $WIF burned), an event → Blockscout | "Senders see where their gift travelled. Every gift, claim and burn is on chain, and the leaderboard ranks who passes $WIF on furthest, leaving our own wallets out." |
 | 100–110 s | `/gifts` reclaim on an expired gift, then end on landing | "Unclaimed $WIF can be reclaimed after expiry. Live on Robinhood Chain mainnet." |
 
 Recording notes: record after a few real (non-team) claims exist so Proof isn't all "team test"; mainnet, small amounts; 1280×800 window + a 375 px window for the phone view; hide bookmarks and other tabs; practise the game first; keep wallet pop-ups visible (they show it's real); don't show a full gift link on screen for longer than needed (anyone who reads it can claim).

@@ -142,10 +142,15 @@ export function fromJSON(j: ActivityJSON): ActivityItem {
 }
 
 /**
- * Our own wallets (deployer/creator, and the team's second wallet used to test claims).
- * Activity between them is testing, not adoption, and the Proof page labels it that way.
+ * Our own wallets: the deployer/creator, the team's second wallet used to test claims, and the relayer
+ * (which pays claim gas and was also used once to test a claim). Activity involving them is testing,
+ * not adoption: the Proof page labels it that way and leaves it out of the leaderboards.
  */
-export const TEAM_WALLETS = new Set(['0xbd1abd235bfb3b27491584e07c9b4bfca4aa1562', '0xe298c55a7fe5205c170ba640ee7f659966bf8051']);
+export const TEAM_WALLETS = new Set([
+  '0xbd1abd235bfb3b27491584e07c9b4bfca4aa1562', // deployer / creator
+  '0xe298c55a7fe5205c170ba640ee7f659966bf8051', // team test wallet
+  '0x0f3c330bfbc8f21951dad6cf2e82af96fdbea994', // relayer
+]);
 export const isTeam = (a: string) => TEAM_WALLETS.has(a.toLowerCase());
 
 /** Reads every RelayEscrow event straight from the chain. No database. */

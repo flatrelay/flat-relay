@@ -1,8 +1,9 @@
 import { formatUnits } from 'viem';
 import { DEPLOYMENTS, blockTimes, fetchActivity, isTeam, type ActivityItem } from '@/lib/relay';
 import { explorerAddress, explorerTx } from '@/lib/chains';
-import { buildRelayGraph, relayChains } from '@/lib/relaymap';
+import { buildRelayGraph, relayChains, widestReach, withoutWallets, type RelayChain } from '@/lib/relaymap';
 import { RelayMap } from '@/components/RelayMap';
+import { LeaderboardTabs } from '@/components/LeaderboardTabs';
 
 export const metadata = { title: 'Proof', description: 'Every FLAT//RELAY gift, claim, burn and reclaim, read directly from the RelayEscrow contract on Robinhood Chain.' };
 
@@ -40,7 +41,15 @@ export default async function ProofPage() {
   const wallets = new Set(claims.map((c) => c.actor.toLowerCase())).size;
   const teamEvents = items.filter((i) => isTeam(i.actor)).length;
   const graph = buildRelayGraph(items);
-  const chains = relayChains(items, 5);
+  // Leaderboards rank outside wallets only: our own gifts and claims are taken out first.
+  const outside = withoutWallets(items, isTeam);
+  const chains = relayChains(outside, 5);
+  const reach = widestReach(outside, 5);
+  // Hand-offs involving our own wallets (every step touches one), shown separately and never ranked.
+  const testChains = relayChains(items, 8).filter((c) => c.wallets.slice(1).every((w, k) => isTeam(w) || isTeam(c.wallets[k])));
+  const burnedOf = new Map(funded.map((f) => [f.campaignId.toString(), f.kind === 'funded' ? f.burned : 0n]));
+  const burnedBy = (gifts: string[]) => gifts.reduce((s, g) => s + (burnedOf.get(g) ?? 0n), 0n);
+  const outsideBurned = outside.reduce((s, i) => s + (i.kind === 'funded' ? i.burned : 0n), 0n);
 
   return (
     <section className="pt-10">
@@ -87,28 +96,72 @@ export default async function ProofPage() {
         <RelayMap graph={graph} chain={CHAIN} />
       </div>
 
-      <h2 id="chains" className="mt-14 text-xl font-semibold">Longest relay chains</h2>
+      <h2 id="leaderboard" className="mt-14 text-xl font-semibold"><span id="chains" />Leaderboard</h2>
       <p className="mt-2 max-w-2xl text-muted">
-        A chain grows when someone claims a gift and then funds a gift of their own that someone else claims. Ranked by
-        hand-offs.
+        Who’s passing $WIF on furthest. Counted from on-chain claims only. Our own team, test and relayer wallets are
+        left out, and the rankings count addresses, not people: one person can use many.
       </p>
-      {chains.length === 0 ? (
-        <p className="mt-4 text-muted">No hand-offs yet.</p>
-      ) : (
-        <ol className="mt-4 divide-y divide-white/20 border-y border-white/20">
-          {chains.map((c, i) => {
-            const team = c.wallets.every(isTeam);
-            return (
-              <li key={i} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-4">
-                <span className="font-wide text-2xl text-flat">{i + 1}</span>
-                <span className="font-semibold">{c.hops} hand-off{c.hops === 1 ? '' : 's'}</span>
-                <span className="break-all font-mono text-sm text-muted">{c.wallets.map(short).join(' → ')}</span>
-                <span className="text-sm text-muted">gifts {c.gifts.map((g) => `#${g}`).join(', ')}</span>
-                {team && <TeamTag />}
-              </li>
-            );
-          })}
-        </ol>
+      <p className="mt-2 font-mono text-sm text-muted">
+        {fmt(outsideBurned)} $WIF burned by gifts from outside wallets · each gift burns 1% on top, so every time $WIF is passed on, more is burned
+      </p>
+      <LeaderboardTabs
+        tabs={[
+          {
+            id: 'chains',
+            label: 'Longest chains',
+            panel: (
+              <>
+                <p className="max-w-2xl text-sm text-muted">
+                  A chain grows when someone claims a gift, then funds a gift of their own that someone else claims. Ranked by hand-offs.
+                </p>
+                {chains.length === 0 ? (
+                  <p className="mt-4 rounded-xl border border-white/30 p-4 text-muted">
+                    No outside chains yet. The first person to claim a gift and pass one on starts the board.
+                  </p>
+                ) : (
+                  <ChainList chains={chains} burnedBy={burnedBy} />
+                )}
+              </>
+            ),
+          },
+          {
+            id: 'reach',
+            label: 'Widest reach',
+            panel: (
+              <>
+                <p className="max-w-2xl text-sm text-muted">
+                  How many different wallets a gift reached in the end: its own claimers, plus everyone reached by gifts they
+                  funded afterwards, and so on.
+                </p>
+                {reach.length === 0 ? (
+                  <p className="mt-4 rounded-xl border border-white/30 p-4 text-muted">
+                    No claimed gifts from outside wallets yet. Fund one and it’s ranked here by how far it travels.
+                  </p>
+                ) : (
+                  <ol className="mt-4 divide-y divide-white/20 border-y border-white/20">
+                    {reach.map((r, i) => (
+                      <li key={r.gift} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-4">
+                        <span className="font-wide text-2xl text-flat">{i + 1}</span>
+                        <span className="font-semibold">{r.reached} wallet{r.reached === 1 ? '' : 's'} reached</span>
+                        <span className="text-sm text-muted">
+                          gift #{r.gift} by <span className="font-mono">{short(r.creator)}</span> · {r.generations} generation{r.generations === 1 ? '' : 's'}
+                          {r.gifts.length > 1 && <> · via gifts {r.gifts.map((g) => `#${g}`).join(', ')}</>}
+                        </span>
+                        <span className="font-mono text-sm text-muted">{fmt(r.burned)} $WIF burned</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </>
+            ),
+          },
+        ]}
+      />
+      {testChains.length > 0 && (
+        <details className="mt-4 text-sm">
+          <summary className="inline-flex min-h-11 cursor-pointer items-center text-muted hover:text-white">Show gifts from our own wallets and test runs (not ranked) ▾</summary>
+          <ChainList chains={testChains} burnedBy={burnedBy} team />
+        </details>
       )}
 
       <h2 className="mt-14 text-xl font-semibold">All events</h2>
@@ -148,6 +201,25 @@ export default async function ProofPage() {
         ) and $WIF token {short(token)}, on Robinhood Chain (4663). The contract has no owner or admin and can’t be upgraded.
       </p>
     </section>
+  );
+}
+
+function ChainList({ chains, burnedBy, team = false }: { chains: RelayChain[]; burnedBy: (gifts: string[]) => bigint; team?: boolean }) {
+  return (
+    <ol className="mt-4 divide-y divide-white/20 border-y border-white/20">
+      {chains.map((c, i) => (
+        <li key={c.wallets.join('>')} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-4">
+          <span className={`font-wide text-2xl ${team ? 'text-muted' : 'text-flat'}`}>{team ? '·' : i + 1}</span>
+          <span className="font-semibold">{c.hops} hand-off{c.hops === 1 ? '' : 's'}</span>
+          <span className="break-all font-mono text-sm text-muted">{c.wallets.map(short).join(' → ')}</span>
+          <span className="text-sm text-muted">gifts {c.gifts.map((g) => `#${g}`).join(', ')}</span>
+          <span className="font-mono text-sm text-muted">{fmt(burnedBy(c.gifts))} $WIF burned</span>
+          {team && (c.wallets.every(isTeam) ? <TeamTag /> : (
+            <span className="rounded border border-white/45 px-1.5 py-0.5 text-xs text-white" title="Sent from one of our wallets, so not ranked">from our wallet</span>
+          ))}
+        </li>
+      ))}
+    </ol>
   );
 }
 

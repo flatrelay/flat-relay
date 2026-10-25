@@ -14,5 +14,6 @@
 
 ## After the hackathon
 - **Relay pool:** sponsors deposit $WIF that tops up gifts sent by people who received one (e.g. +20%, capped per gift and per wallet). It's a separate contract that checks RelayEscrow's `claimed()` record on chain, so funds only ever go into the escrow. Needs its own tests and review before mainnet. Full description in SUBMISSION.md, "What's next".
+- **Leaderboard seasons with prizes (after 2 Nov):** weekly or monthly seasons on the Longest chains / Widest reach boards, with the top relays winning $WIF (e.g. paid from the relay pool). Prizes invite farming, so it needs rules first: outside wallets only, a minimum gift size, prizes paid into new gifts rather than to wallets, and a public, on-chain way to check the winners. Not before the hackathon closes.
 - **Open-challenge mode:** the server replays the game (`verifyRun`) before signing a claim ticket.
 - **More game templates.**
