@@ -33,6 +33,26 @@ export function DemoVideo() {
 
   return (
     <div className="mt-12">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <a
+          href={YOUTUBE_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#FF0033] py-1.5 pl-2.5 pr-3.5 text-xs font-semibold text-white shadow-lg transition hover:bg-[#d9002b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-current"><path d="M8 5.5v13l11-6.5z" /></svg>
+          Watch on YouTube<span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {muted && (
+          <button
+            type="button"
+            onClick={soundOn}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-flat px-3.5 py-1.5 text-xs font-semibold text-ink shadow-lg hover:brightness-105"
+          >
+            <span aria-hidden>🔊</span> Sound on
+          </button>
+        )}
+      </div>
     <figure className="relative overflow-hidden rounded-3xl border border-white/30 bg-panel shadow-[0_0_80px_rgba(255,197,46,0.12)]">
       <video
         ref={ref}
@@ -47,24 +67,10 @@ export function DemoVideo() {
         <source src="/video/flat-relay-demo.mp4" type="video/mp4" />
         <track kind="captions" src="/video/flat-relay-demo.en.vtt" srcLang="en" label="English" default />
       </video>
-      {muted && (
-        <button
-          type="button"
-          onClick={soundOn}
-          className="absolute right-3 top-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-flat px-4 py-2 text-sm font-semibold text-ink shadow-lg hover:brightness-105"
-        >
-          <span aria-hidden>🔊</span> Sound on
-        </button>
-      )}
       <figcaption className="sr-only">
         The demo: fund a gift, share the link, play the 20-second game (or skip it), claim gas-free, pass it on. Voice: ElevenLabs.
       </figcaption>
     </figure>
-    <p className="mt-3 text-sm text-muted">
-      <a className="inline-flex min-h-11 items-center underline decoration-white/40 underline-offset-4 hover:text-white" href={YOUTUBE_URL} target="_blank" rel="noreferrer">
-        Watch on YouTube<span aria-hidden>&nbsp;↗</span><span className="sr-only"> (opens in a new tab)</span>
-      </a>
-    </p>
     </div>
   );
 }

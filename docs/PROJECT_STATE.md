@@ -74,3 +74,4 @@ _Updated 24 Oct 2026, 21:00 SGT_
 - 26 Oct 01:05: Demo uploaded to YouTube (Unlisted): https://www.youtube.com/watch?v=Nuu1TgPQvUk, title "Don't Just Send Crypto. Make Them Play For It. | FLAT//RELAY", SRT captions, thumbnail brand/FLAT-RELAY-thumbnail.jpg. Home page video now has a "Watch on YouTube" link.
 - 26 Oct 01:10: Home video switched to the **YouTube embed** (youtube-nocookie.com, autoplay muted, captions on, "Play with sound" button via iframe API postMessage); self-hosted app/public/video removed.
 - 26 Oct 01:15: Reverted to the **self-hosted** home video (user prefers it to the YouTube embed); kept a "Watch on YouTube" link under it.
+- 26 Oct 01:25: Browser-tab icon now the chosen logo (app/icon.png 192px with a thicker horizon line for small sizes, app/apple-icon.png 180px; generated app/icon.tsx removed). Home video: red "Watch on YouTube" pill + "Sound on" moved to a row above the video's corners so they don't cover the video's own labels.
