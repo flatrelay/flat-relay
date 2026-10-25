@@ -25,7 +25,7 @@ Deadline: **2 Nov 2026 17:30 UTC** (3 Nov 01:30 SGT). Target: 2 Nov 18:00 SGT.
 FLAT//RELAY
 
 ## One-liner
-Send $WIF as something to play: fund a gift, share a link, and whoever lands the sun on the horizon claims it, gas-free, on Robinhood Chain.
+Land the sun, keep the $WIF: send $WIF as a link your friends play to open, claim gas-free on Robinhood Chain, and pass on. Every gift burns 1%.
 
 ## Short description (≈100 words)
 FLAT//RELAY turns a $WIF transfer into a moment. You fund a gift in an immutable escrow on Robinhood Chain, choose how many people can claim and when it expires, and get one link. The link carries a one-time key, so no server ever holds your gift. Whoever opens it plays Flat Line, a 20-second timing game, then claims to any address: no wallet app and no gas, because a rate-limited relayer pays it. Every gift burns 1% of its $WIF. Unclaimed $WIF returns to the sender after expiry. A public proof page and relay map show every gift, claim and burn, read straight from the chain.
@@ -67,7 +67,7 @@ Games · Social and Creators · Consumer and Payments · Onboarding (gas-free pa
 
 | Time | Screen | Voice-over |
 |---|---|---|
-| 0–8 s | Landing page; hover the sun so it turns | "Sending crypto is a transfer. FLAT//RELAY makes it something to play." |
+| 0–8 s | Landing page ("Land the sun. Keep the $WIF."); hover the sun so it turns | "Sending crypto is a transfer. FLAT//RELAY makes it something you play: land the sun, keep the $WIF." |
 | 8–18 s | Click "Try the game, free" → `/play`, land the sun once or twice | "You can try the game right now. No wallet, nothing is paid." |
 | 18–35 s | `/create`: 5 $WIF × 2 claims, 1 day, Flat Line, message. Point at "Burned: 1% added on top" and the fee note. Connect menu (Browser wallet / WalletConnect) → approve (step 1 of 2) → create (step 2 of 2) | "Pick an amount and how many people can claim. One percent is burned on top, straight from $WIF's supply. Connect with a browser wallet or WalletConnect." |
 | 35–42 s | Link appears + "How links work" list; copy | "You get one link. The key lives in the link, so no server ever holds your gift." |

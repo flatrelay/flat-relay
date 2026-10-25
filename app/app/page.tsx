@@ -27,11 +27,12 @@ export default async function Home() {
     <>
       <section className="pt-14 sm:pt-24">
         <h1 className="font-wide max-w-4xl text-[2.6rem] leading-[1.04] sm:text-7xl">
-          Send $WIF as something to play.
+          <span className="block">Land the sun.</span>
+          <span className="block text-flat">Keep the $WIF.</span>
         </h1>
         <p className="mt-6 max-w-xl text-lg text-muted">
-          Fund a gift and share the link. Whoever lands the sun on the horizon claims it. Receiving needs no wallet app and
-          no gas. Every gift burns 1% of its $WIF.
+          Send $WIF as a link your friends play to open. They claim it gas-free, with no wallet app needed, then pass it on.
+          Every gift burns 1% of its $WIF.
         </p>
         <div className="mt-9 flex flex-wrap gap-3">
           <Link href="/create" className="inline-flex min-h-11 items-center rounded-full bg-flat px-6 py-3 font-semibold text-ink hover:brightness-105">

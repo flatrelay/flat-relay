@@ -17,7 +17,7 @@ export const wagmiConfig = createConfig({
           showQrModal: true,
           metadata: {
             name: 'FLAT//RELAY',
-            description: 'Send $WIF as something to play.',
+            description: 'Land the sun, keep the $WIF.',
             url: 'https://flat-relay.vercel.app',
             icons: ['https://flat-relay.vercel.app/icon'],
           },

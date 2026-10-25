@@ -13,8 +13,8 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://flat-relay.vercel.app'),
-  title: { default: 'FLAT//RELAY: send $WIF as something to play', template: '%s · FLAT//RELAY' },
-  description: 'Fund a $WIF gift, share one link, and whoever lands the sun on the horizon claims it, gas-free, on Robinhood Chain. Every gift burns 1%.',
+  title: { default: 'FLAT//RELAY: land the sun, keep the $WIF', template: '%s · FLAT//RELAY' },
+  description: 'Send $WIF as a link your friends play to open. Land the sun, claim gas-free on Robinhood Chain, pass it on. Every gift burns 1%.',
   openGraph: { siteName: 'FLAT//RELAY', type: 'website' },
   twitter: { card: 'summary_large_image' },
 };
