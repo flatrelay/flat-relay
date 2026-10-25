@@ -11,3 +11,8 @@
 | 31 Oct–1 Nov | Security review, QA, video, copy | |
 | **2 Nov 18:00** | **Submit** (deadline 2 Nov 17:30 UTC) | Portal confirms |
 | 2–6 Nov | Keep live, monitor relayer | Final closes 6 Nov 17:30 UTC |
+
+## After the hackathon
+- **Relay pool:** sponsors deposit $WIF that tops up gifts sent by people who received one (e.g. +20%, capped per gift and per wallet). It's a separate contract that checks RelayEscrow's `claimed()` record on chain, so funds only ever go into the escrow. Needs its own tests and review before mainnet. Full description in SUBMISSION.md, "What's next".
+- **Open-challenge mode:** the server replays the game (`verifyRun`) before signing a claim ticket.
+- **More game templates.**

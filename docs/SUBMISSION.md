@@ -52,6 +52,17 @@ Fill from `TEST_EVIDENCE.md` at submission time: gifts created, claims (incl. ga
 - Rate limits reduce draining of the relayer's gas; they are not Sybil resistance.
 - The contract is immutable: bugs can't be patched, but nobody can seize funds either.
 
+## What's next (after the hackathon)
+**Relay pool: rewarding the pass-on, not the hold.** Sponsors (the WIF community, Robinhood Chain projects, us) deposit $WIF into a pool. When someone claims a gift and then sends a gift of their own, the pool tops up that new gift (for example +20%), so passing $WIF on is worth more than sitting on it.
+- **Checkable on chain:** a separate pool contract checks with RelayEscrow's public `claimed(giftId, address)` record that the new gift's sender really received an earlier gift. No server has to vouch for it.
+- **Bounded:** a per-gift cap and a per-wallet cap, the pool only pays into the escrow (never straight to a wallet), and it's funded by sponsors, not from fees or new tokens.
+- **Same rules as today:** no admin keys over user funds, the 1% burn still applies to every topped-up gift, and anything left over returns to the sponsor after the pool ends.
+- **Not built yet.** It would be a new contract holding funds, so it gets its own tests and review before mainnet.
+
+Also next:
+- **Open-challenge mode:** public links where the server replays the game before issuing a claim ticket (the replay check already exists in the code).
+- **More games:** more templates on the same escrow.
+
 ## Links
 - App: https://flat-relay.vercel.app
 - Proof + relay map: https://flat-relay.vercel.app/proof
