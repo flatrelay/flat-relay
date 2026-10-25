@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Bad request.' }, { status: 400 });
   }
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.ip || 'unknown';
+  // Vercel sets x-real-ip / x-forwarded-for to the client address. (req.ip is gone in Next 15.)
+  const ip = req.headers.get('x-real-ip')?.trim() || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   const r = await relayClaim(body, ip);
   return r.ok ? NextResponse.json({ hash: r.hash }) : NextResponse.json({ error: r.error }, { status: r.status });
 }
