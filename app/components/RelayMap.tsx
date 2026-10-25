@@ -14,12 +14,22 @@ export function RelayMap({ graph, chain }: { graph: RelayGraph; chain: Supported
   if (!graph.edges.length) {
     return <p className="rounded-2xl border border-line bg-panel p-6 text-muted">No hand-offs yet. The map draws itself as gifts are claimed.</p>;
   }
+  // Several gifts between the same two wallets share one line; the label lists them and sums the amount.
+  const merged = new Map<string, { from: string; to: string; ids: string[]; amount: bigint }>();
+  for (const e of graph.edges) {
+    const k = `${e.from}>${e.to}`;
+    const m = merged.get(k) ?? { from: e.from, to: e.to, ids: [], amount: 0n };
+    m.ids.push(e.campaignId.toString());
+    m.amount += e.amount;
+    merged.set(k, m);
+  }
+  const lines = Array.from(merged.values());
   const pos = new Map(graph.nodes.map((n) => [n.id, { x: PAD_X + n.depth * COL, y: PAD_Y + n.row * ROW }]));
   const cols = Math.max(...graph.nodes.map((n) => n.depth)) + 1;
   const rows = Math.max(...graph.nodes.map((n) => n.row)) + 1;
   const w = PAD_X * 2 + (cols - 1) * COL + 60;
   const gridBottom = PAD_Y + (rows - 1) * ROW;
-  const hasBack = graph.edges.some((e) => pos.get(e.to)!.x <= pos.get(e.from)!.x);
+  const hasBack = lines.some((e) => pos.get(e.to)!.x <= pos.get(e.from)!.x);
   const loopY = gridBottom + 40; // gifts that travel back to an earlier generation loop under the map
   const h = (hasBack ? loopY + 24 : gridBottom + PAD_Y);
 
@@ -27,7 +37,7 @@ export function RelayMap({ graph, chain }: { graph: RelayGraph; chain: Supported
     <div className="overflow-x-auto rounded-2xl border border-line bg-panel">
       <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block min-w-full" role="img"
         aria-label={`Relay map: ${graph.nodes.length} wallets, ${graph.edges.length} hand-offs`}>
-        {graph.edges.map((e, i) => {
+        {lines.map((e, i) => {
           const a = pos.get(e.from)!;
           const b = pos.get(e.to)!;
           const forward = b.x > a.x;
@@ -42,7 +52,7 @@ export function RelayMap({ graph, chain }: { graph: RelayGraph; chain: Supported
             <g key={i}>
               <path d={d} fill="none" stroke="#FFC52E" strokeOpacity={0.55} strokeWidth={1.5} />
               <text x={mx} y={my} textAnchor="middle" className="fill-muted font-mono" fontSize={11}>
-                #{e.campaignId.toString()} · {fmt(e.amount)}
+                {e.ids.map((id) => `#${id}`).join(' ')} · {fmt(e.amount)}
               </text>
             </g>
           );
