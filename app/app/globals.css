@@ -8,7 +8,7 @@ body { background: #1230C7; color: #F4F1E4; }
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-line bg-panel px-4 py-3 text-white outline-none placeholder:text-muted/70 focus:border-flat disabled:opacity-50;
+    @apply w-full rounded-lg border border-white/55 bg-panel px-4 py-3 text-white outline-none placeholder:text-muted/70 focus:border-flat disabled:opacity-50;
   }
   /* Headline voice: Anybody slightly widened. Wide enough to feel 'flat', not so wide it crowds. */
   .font-wide {

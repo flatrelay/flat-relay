@@ -11,6 +11,80 @@ export type MapNode = { id: string; address: Address; depth: number; row: number
 export type MapEdge = { from: string; to: string; campaignId: bigint; amount: bigint; block: bigint };
 export type RelayGraph = { nodes: MapNode[]; edges: MapEdge[]; longestChain: number; relayers: number; selfClaims: number };
 
+/** Every hand-off (creator -> claimer, self-claims excluded), oldest first. */
+export function claimEdges(items: ActivityItem[]): MapEdge[] {
+  const creatorOf = new Map<string, string>();
+  for (const i of items) if (i.kind === 'funded') creatorOf.set(i.campaignId.toString(), i.actor.toLowerCase());
+  return items
+    .filter((i) => i.kind === 'claimed')
+    .map((i) => ({ from: creatorOf.get(i.campaignId.toString()) ?? '', to: i.actor.toLowerCase(), campaignId: i.campaignId, amount: i.amount, block: i.block }))
+    .filter((e) => e.from && e.from !== e.to)
+    .sort((a, b) => Number(a.block - b.block));
+}
+
+/**
+ * Longest relay chains: sequences of hand-offs where each gift was funded by the previous claimer,
+ * after they received. (A sends to B, then B sends to C, ...) Ranked by number of hand-offs.
+ */
+export type RelayChain = { hops: number; wallets: string[]; gifts: string[]; lastBlock: bigint };
+export function relayChains(items: ActivityItem[], limit = 5): RelayChain[] {
+  const edges = claimEdges(items);
+  const best: { len: number; prev: number }[] = [];
+  const byTo = new Map<string, number[]>(); // wallet -> indexes of edges that delivered to it
+  edges.forEach((e, i) => {
+    let len = 1, prev = -1;
+    for (const j of byTo.get(e.from) ?? []) {
+      if (edges[j].block < e.block && best[j].len + 1 > len) { len = best[j].len + 1; prev = j; }
+    }
+    best.push({ len, prev });
+    byTo.set(e.to, [...(byTo.get(e.to) ?? []), i]);
+  });
+  const order = edges.map((_, i) => i).sort((a, b) => best[b].len - best[a].len || Number(edges[b].block - edges[a].block));
+  const display = new Map<string, string>(); // lowercase -> checksummed, for display
+  for (const i of items) display.set(i.actor.toLowerCase(), i.actor);
+  const used = new Set<number>();
+  const byPath = new Map<string, RelayChain>(); // same wallets in the same order = one row, gifts merged
+  for (const end of order) {
+    if (used.has(end)) continue;
+    const path: number[] = [];
+    for (let k = end; k !== -1; k = best[k].prev) path.unshift(k);
+    path.forEach((k) => used.add(k));
+    const wallets = [edges[path[0]].from, ...path.map((k) => edges[k].to)];
+    const key = wallets.join('>');
+    const gifts = path.map((k) => edges[k].campaignId.toString());
+    const prev = byPath.get(key);
+    if (prev) {
+      prev.gifts = Array.from(new Set([...prev.gifts, ...gifts])).sort((x, y) => Number(x) - Number(y));
+      continue;
+    }
+    if (byPath.size >= limit) continue;
+    byPath.set(key, { hops: path.length, wallets: wallets.map((w) => display.get(w) ?? w), gifts, lastBlock: edges[end].block });
+  }
+  return Array.from(byPath.values());
+}
+
+/** Where a wallet's received $WIF went next: wallets reached by later gifts, and the longest onward chain. */
+export function downstream(items: ActivityItem[], wallet: string, afterBlock: bigint): { reached: number; depth: number } {
+  const edges = claimEdges(items);
+  const seen = new Set<string>([wallet.toLowerCase()]);
+  let frontier: { w: string; after: bigint; d: number }[] = [{ w: wallet.toLowerCase(), after: afterBlock, d: 0 }];
+  let depth = 0;
+  while (frontier.length) {
+    const next: typeof frontier = [];
+    for (const f of frontier) {
+      for (const e of edges) {
+        if (e.from === f.w && e.block > f.after && !seen.has(e.to)) {
+          seen.add(e.to);
+          depth = Math.max(depth, f.d + 1);
+          next.push({ w: e.to, after: e.block, d: f.d + 1 });
+        }
+      }
+    }
+    frontier = next;
+  }
+  return { reached: seen.size - 1, depth };
+}
+
 const MAX_EDGES = 80; // keep the drawing readable; the full list is below it on /proof
 
 export function buildRelayGraph(items: ActivityItem[]): RelayGraph {

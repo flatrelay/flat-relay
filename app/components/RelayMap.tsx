@@ -34,7 +34,8 @@ export function RelayMap({ graph, chain }: { graph: RelayGraph; chain: Supported
   const h = (hasBack ? loopY + 24 : gridBottom + PAD_Y);
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-line bg-panel">
+    <>
+    <div className="overflow-x-auto rounded-2xl border border-white/30 bg-panel">
       <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="block min-w-full" role="img"
         aria-label={`Relay map: ${graph.nodes.length} wallets, ${graph.edges.length} hand-offs`}>
         {lines.map((e, i) => {
@@ -71,5 +72,17 @@ export function RelayMap({ graph, chain }: { graph: RelayGraph; chain: Supported
         })}
       </svg>
     </div>
+    {/* The same relationships as text, for screen readers and anyone who prefers a list. */}
+    <details className="mt-3 text-sm">
+      <summary className="min-h-11 cursor-pointer py-2 text-muted hover:text-white">List the hand-offs as text</summary>
+      <ul className="mt-2 space-y-1 font-mono text-muted">
+        {lines.map((e) => (
+          <li key={`${e.from}>${e.to}`}>
+            {short(e.from)} gifted {short(e.to)}: {e.ids.map((x) => `#${x}`).join(', ')}, {fmt(e.amount)} $WIF
+          </li>
+        ))}
+      </ul>
+    </details>
+    </>
   );
 }

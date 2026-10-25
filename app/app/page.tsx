@@ -15,7 +15,7 @@ async function liveLine(): Promise<string | null> {
     if (!gifts.length) return null;
     const claimed = claims.reduce((s, i) => s + i.amount, 0n);
     const burned = gifts.reduce((s, i) => s + (i.kind === 'funded' ? i.burned : 0n), 0n);
-    return `So far on mainnet: ${gifts.length} gift${gifts.length === 1 ? '' : 's'}, ${fmt(claimed)} $WIF claimed, ${fmt(burned)} $WIF burned.`;
+    return `So far on mainnet, including our own test gifts: ${gifts.length} gift${gifts.length === 1 ? '' : 's'}, ${fmt(claimed)} $WIF claimed, ${fmt(burned)} $WIF burned.`;
   } catch {
     return null;
   }
@@ -30,14 +30,17 @@ export default async function Home() {
           Send $WIF as something to play.
         </h1>
         <p className="mt-6 max-w-xl text-lg text-muted">
-          Fund a gift and share the link. Whoever lands the sun on the horizon claims it, with no gas and no wallet app
-          needed. Every gift burns 1%.
+          Fund a gift and share the link. Whoever lands the sun on the horizon claims it. Receiving needs no wallet app and
+          no gas. Every gift burns 1% of its $WIF.
         </p>
         <div className="mt-9 flex flex-wrap gap-3">
-          <Link href="/create" className="rounded-full bg-flat px-6 py-3 font-semibold text-ink hover:brightness-105">
+          <Link href="/create" className="inline-flex min-h-11 items-center rounded-full bg-flat px-6 py-3 font-semibold text-ink hover:brightness-105">
             Send a gift
           </Link>
-          <Link href="/proof" className="rounded-full border border-line px-6 py-3 hover:border-white">
+          <Link href="/play" className="inline-flex min-h-11 items-center rounded-full border border-white/50 px-6 py-3 hover:border-flat">
+            Try the game, free
+          </Link>
+          <Link href="/proof" className="inline-flex min-h-11 items-center px-2 py-3 text-muted underline decoration-white/40 underline-offset-4 hover:text-white">
             See every transaction
           </Link>
         </div>
@@ -51,9 +54,9 @@ export default async function Home() {
       </div>
 
       <section className="grid gap-10 pt-12 sm:grid-cols-3">
-        <Step n="1" title="Fund it">Pick an amount and how many people can claim. It sits in an escrow contract nobody else can touch.</Step>
-        <Step n="2" title="Share the link">The link carries the key. Send it in a DM, a group chat or a stream.</Step>
-        <Step n="3" title="Land the sun">They play a 20-second game, paste any address and claim. Unclaimed $WIF returns to you.</Step>
+        <Step n="1" title="Fund it">Pick an amount and how many people can claim. It waits in an escrow contract with no admin: only people with your link, or you after it expires, can move it.</Step>
+        <Step n="2" title="Share the link">The link is the key: anyone who has it can claim, first come, first served. Send it privately.</Step>
+        <Step n="3" title="Land the sun">They play a 20-second game (or skip it), paste their Robinhood Chain address and claim. After expiry, you can reclaim whatever is left.</Step>
       </section>
 
       {live && <p className="mt-14 text-muted">{live}</p>}

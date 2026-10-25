@@ -17,6 +17,7 @@ export function newGiftKey(): { pk: Hex; signer: Address } {
 export const TEMPLATES = {
   flatline: { name: 'Flat Line', blurb: 'Land a sliding sun on the horizon, three times. About 20 seconds.' },
   none: { name: 'No game', blurb: 'The gift opens straight away.' },
+  // Recipients of a Flat Line gift can always choose to skip the game: it's a ritual, not a lock.
 } as const;
 export type Template = keyof typeof TEMPLATES;
 
@@ -92,7 +93,32 @@ const REVERT_MESSAGES: Record<string, string> = {
   SafeERC20FailedOperation: 'The token transfer failed. Check your balance and approval.',
 };
 
+export const NO_WALLET_MESSAGE =
+  'No browser wallet found. To send or reclaim gifts, install a wallet extension such as MetaMask or Rabby, or on a phone open this site inside your wallet app’s browser. Receiving a gift doesn’t need a wallet.';
+
+/** Wallet-level errors (no wallet, cancelled, unknown network, busy) in plain words with a next step. */
+function walletError(e: unknown): string | null {
+  let found: string | null = null;
+  const check = (err: unknown) => {
+    const x = err as { name?: string; code?: number; message?: string } | null;
+    if (!x || found) return;
+    const msg = (x.message ?? '').toLowerCase();
+    if (x.name === 'ProviderNotFoundError' || msg.includes('provider not found')) found = NO_WALLET_MESSAGE;
+    else if (x.code === 4001 || x.name === 'UserRejectedRequestError' || msg.includes('user rejected') || msg.includes('user denied'))
+      found = 'You cancelled the request in your wallet. Nothing was sent. Try again when you’re ready.';
+    else if (x.code === 4902 || msg.includes('unrecognized chain') || msg.includes('chain not configured'))
+      found = 'Your wallet doesn’t know Robinhood Chain yet. Approve “Add network” when your wallet asks, or add it by hand: chain ID 4663, RPC https://rpc.mainnet.chain.robinhood.com.';
+    else if (x.code === -32002 || msg.includes('already pending'))
+      found = 'Your wallet already has a request waiting. Open your wallet, finish or cancel it, then try again.';
+  };
+  if (e instanceof BaseError) e.walk((err) => { check(err); return false; });
+  check(e);
+  return found;
+}
+
 export function friendlyError(e: unknown): string {
+  const w = walletError(e);
+  if (w) return w;
   if (e instanceof BaseError) {
     const revert = e.walk((err) => err instanceof ContractFunctionRevertedError);
     if (revert instanceof ContractFunctionRevertedError) {

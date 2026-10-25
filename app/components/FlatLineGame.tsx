@@ -72,7 +72,7 @@ export function FlatLineGame({ seed, onWin }: Props) {
         onPointerDown={(e) => { e.preventDefault(); tap(); }}
         aria-label="Tap to land the sun. Space or Enter also works."
         className={`relative mt-4 block h-52 w-full touch-none select-none overflow-hidden rounded-3xl border bg-panel transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-flat ${
-          flash === 'hit' ? 'border-flat' : flash === 'miss' ? 'border-red-500/70' : 'border-line'
+          flash === 'hit' ? 'border-flat' : flash === 'miss' ? 'border-red-500/70' : 'border-white/45'
         }`}
       >
         {/* the band */}

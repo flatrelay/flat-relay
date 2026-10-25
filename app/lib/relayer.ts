@@ -5,7 +5,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { robinhood, robinhoodTestnet, type SupportedChainId } from './chains';
 import { DEPLOYMENTS, escrowAbi, publicClient } from './relay';
 import { friendlyError, isSupportedChain } from './gift';
-import { bumpDaily, dailyCount, limiterBackend, overLimit, withSendLock } from './ratelimit';
+import { bumpDaily, claimOnce, dailyCount, limiterBackend, overLimit, releaseOnce, withSendLock } from './ratelimit';
 
 /**
  * Gas-free claims. A hot relayer key (RELAYER_PRIVATE_KEY, server-only env var, small ETH balance)
@@ -64,6 +64,18 @@ export async function relayClaim(body: RelayRequest, ip: string): Promise<{ ok: 
   if (await overLimit(`ip:${ip}`, IP_LIMIT.max, IP_LIMIT.windowSec)) return { ok: false, status: 429, error: 'Too many claims from this connection. Wait a few minutes.' };
   if (await overLimit(`to:${chainId}:${recipient.toLowerCase()}`, RECIPIENT_LIMIT.max, RECIPIENT_LIMIT.windowSec)) return { ok: false, status: 429, error: 'Too many attempts for this address. Wait a while.' };
 
+  // 2b. the same claim can't be in flight twice (double-clicks, two tabs): a duplicate would revert on chain and waste gas
+  const onceKey = `${chainId}:${campaignId}:${recipient.toLowerCase()}`;
+  if (!(await claimOnce(onceKey, 120))) return { ok: false, status: 409, error: 'This claim is already being sent. Wait a minute, then refresh the page to check.' };
+  const r = await submit(account, chainId, campaignId, recipient, deadline, body.signature as Hex);
+  if (!r.ok) await releaseOnce(onceKey); // let them retry after a failure; keep the key after success
+  return r;
+}
+
+async function submit(
+  account: NonNullable<ReturnType<typeof relayerAccount>>, chainId: SupportedChainId, campaignId: bigint,
+  recipient: Address, deadline: bigint, signature: Hex,
+): Promise<{ ok: true; hash: Hex } | { ok: false; status: number; error: string }> {
   const client = publicClient(chainId);
   const escrow = DEPLOYMENTS[chainId].escrow;
 
@@ -76,7 +88,7 @@ export async function relayClaim(body: RelayRequest, ip: string): Promise<{ ok: 
   if (balance < MIN_BALANCE) return { ok: false, status: 503, error: 'Gas-free claims are paused (relayer needs top-up). You can claim with your own wallet.' };
 
   // 4. never pay for a failing tx: simulate from the relayer
-  const args = [campaignId, recipient, deadline, body.signature as Hex] as const;
+  const args = [campaignId, recipient, deadline, signature] as const;
   let gas: bigint;
   try {
     const sim = await client.simulateContract({ account, address: escrow, abi: escrowAbi, functionName: 'claim', args });
@@ -89,11 +101,15 @@ export async function relayClaim(body: RelayRequest, ip: string): Promise<{ ok: 
   // 5. send, one at a time across all instances (shared lock), so two sends never race for a nonce
   const wallet = createWalletClient({ account, chain: chainId === 4663 ? robinhood : robinhoodTestnet, transport: http() });
   try {
-    const hash = await withSendLock(chainId, () => wallet.writeContract({ address: escrow, abi: escrowAbi, functionName: 'claim', args, gas }));
+    const hash = await withSendLock(chainId, async () => {
+      // re-check inside the lock: another instance may have just used the last slot
+      await client.simulateContract({ account, address: escrow, abi: escrowAbi, functionName: 'claim', args });
+      return wallet.writeContract({ address: escrow, abi: escrowAbi, functionName: 'claim', args, gas });
+    });
     await bumpDaily();
     return { ok: true, hash };
   } catch (e) {
     if (e instanceof Error && e.message.startsWith('Relayer busy')) return { ok: false, status: 503, error: e.message };
-    return { ok: false, status: 502, error: friendlyError(e) };
+    return { ok: false, status: 400, error: friendlyError(e) };
   }
 }

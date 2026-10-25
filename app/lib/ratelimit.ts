@@ -75,6 +75,27 @@ export async function bumpDaily(): Promise<void> {
   memIncr(dayKey(), 2 * 86400);
 }
 
+// ---- one-at-a-time claims: the same (chain, gift, recipient) can't be submitted twice in a short window ----
+export async function claimOnce(name: string, ttlSec: number): Promise<boolean> {
+  const key = `${PREFIX}once:${name}`;
+  if (limiterBackend() === 'shared') {
+    try {
+      const [r] = await redis([['SET', key, '1', 'NX', 'EX', ttlSec]]);
+      return r === 'OK';
+    } catch {}
+  }
+  if (memGet(key) > 0) return false;
+  memIncr(key, ttlSec);
+  return true;
+}
+export async function releaseOnce(name: string): Promise<void> {
+  const key = `${PREFIX}once:${name}`;
+  if (limiterBackend() === 'shared') {
+    try { await redis([['DEL', key]]); return; } catch {}
+  }
+  mem.delete(key);
+}
+
 // ---- send lock: one relayer transaction at a time across all instances (nonce safety) ----
 let localQueue: Promise<unknown> = Promise.resolve();
 const RELEASE = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";

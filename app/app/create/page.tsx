@@ -5,6 +5,8 @@ import { formatUnits, parseEventLogs, parseUnits, type Hex } from 'viem';
 import { useAccount, useSwitchChain, useWriteContract } from 'wagmi';
 import { explorerTx, type SupportedChainId } from '@/lib/chains';
 import { DEPLOYMENTS, erc20Abi, escrowAbi, publicClient } from '@/lib/relay';
+import { ConnectButton } from '@/components/ConnectButton';
+import { LinkRules } from '@/components/LinkRules';
 import { TEMPLATES, friendlyError, giftLink, giftMetadataHash, isSupportedChain, newGiftKey, type Template } from '@/lib/gift';
 
 type Step = 'form' | 'approving' | 'creating' | 'done';
@@ -66,6 +68,8 @@ export default function CreatePage() {
     }
   }, [per, count]);
 
+  const errField = 'err' in calc ? (calc.err?.startsWith('Claims') ? 'count' : 'per') : null;
+
   async function create() {
     if (!address || 'err' in calc) return;
     setError(null);
@@ -114,10 +118,11 @@ export default function CreatePage() {
       <section className="mx-auto max-w-xl pt-12">
         <h1 className="font-wide text-4xl">Your gift is live. Share this link.</h1>
         <p className="mt-3 text-muted">
-          Anyone who opens it can claim. Send it privately, in a DM or chat, not in public. The link is the key, and it is not stored anywhere else.
+          The link is the key, and it isn’t stored anywhere else, so copy it now. Send it privately, in a DM or chat.
         </p>
+        <LinkRules />
         <div className="mt-6 flex gap-2">
-          <input readOnly value={link} className="w-full rounded-xl border border-line bg-panel px-4 py-3 font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+          <input readOnly value={link} aria-label="Your gift link" className="w-full rounded-xl border border-white/55 bg-panel px-4 py-3 font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
           <button
             onClick={async () => { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
             className="shrink-0 rounded-xl bg-flat px-4 font-medium text-ink"
@@ -137,63 +142,78 @@ export default function CreatePage() {
       <p className="mt-3 text-muted">Fund it once, share one link. 1% of the gift is burned when you create it.</p>
       {from && (
         <p className="mt-3 rounded-lg border border-flat/60 px-3 py-2 text-sm text-white">
-          Passing on gift #{from}. The amounts are a suggestion based on what you received; change anything you like.
+          Passing on gift #{from}. The amounts are a suggestion based on what you received; change anything you like. Sending
+          needs a browser wallet holding that $WIF plus a little ETH on Robinhood Chain for two network fees.
         </p>
       )}
       {chain === 46630 && <p className="mt-3 rounded-lg border border-white/40 px-3 py-2 text-sm text-white">Testnet: uses mWIF test tokens, not real $WIF.</p>}
 
       <div className="mt-8 space-y-5">
-        <Field label={`${tokenLabel} per claim`}>
-          <input inputMode="decimal" value={per} onChange={(e) => setPer(e.target.value)} disabled={busy} className="input" />
+        <Field label={`${tokenLabel} each person gets`}>
+          <input inputMode="decimal" value={per} onChange={(e) => setPer(e.target.value)} disabled={busy} className="input"
+            aria-invalid={errField === 'per' || undefined} aria-describedby={errField === 'per' ? 'calc-err' : undefined} />
         </Field>
-        <Field label="How many people can claim">
-          <input inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value)} disabled={busy} className="input" />
+        <Field label="How many people can claim (one claim per address)">
+          <input inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value)} disabled={busy} className="input"
+            aria-invalid={errField === 'count' || undefined} aria-describedby={errField === 'count' ? 'calc-err' : undefined} />
         </Field>
         <Field label="Expires after" group>
           <div className="flex flex-wrap gap-2">
             {EXPIRY.map((o) => (
-              <button key={o.s} type="button" disabled={busy} onClick={() => setExpirySecs(o.s)}
-                className={`rounded-full border px-4 py-1.5 text-sm ${expirySecs === o.s ? 'border-flat text-flat' : 'border-line text-muted'}`}>
+              <button key={o.s} type="button" disabled={busy} onClick={() => setExpirySecs(o.s)} aria-pressed={expirySecs === o.s}
+                className={`min-h-11 rounded-full border px-4 py-2 text-sm ${expirySecs === o.s ? 'border-flat bg-flat/10 text-flat' : 'border-white/45 text-muted hover:text-white'}`}>
                 {o.label}
               </button>
             ))}
           </div>
         </Field>
-        <Field label="Challenge before they can claim" group>
+        <Field label="Game before they claim (recipients can always skip it)" group>
           <div className="grid gap-2 sm:grid-cols-2">
             {(Object.keys(TEMPLATES) as Template[]).map((t) => (
-              <button key={t} type="button" disabled={busy} onClick={() => setTemplate(t)}
-                className={`rounded-xl border p-3 text-left ${template === t ? 'border-flat' : 'border-line'}`}>
+              <button key={t} type="button" disabled={busy} onClick={() => setTemplate(t)} aria-pressed={template === t}
+                className={`rounded-xl border p-3 text-left ${template === t ? 'border-flat bg-flat/10' : 'border-white/45'}`}>
                 <span className={`block font-medium ${template === t ? 'text-flat' : 'text-white'}`}>{TEMPLATES[t].name}</span>
-                <span className="mt-1 block text-xs text-muted">{TEMPLATES[t].blurb}</span>
+                <span className="mt-1 block text-sm text-muted">{TEMPLATES[t].blurb}</span>
               </button>
             ))}
           </div>
         </Field>
-        <Field label="Message (optional, travels in the link only)">
+        <Field label="Message (optional). Anyone with the link can read it; it is never stored on chain">
           <input maxLength={140} value={message} onChange={(e) => setMessage(e.target.value)} disabled={busy} placeholder="gm, the world is flat" className="input" />
         </Field>
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-panel p-5 font-mono text-sm">
+        <div aria-live="polite">
         {'err' in calc ? (
-          <p className="text-red-300">{calc.err}</p>
+          <p id="calc-err" className="text-alert">{calc.err}</p>
         ) : (
           <>
-            <Row k="Gift pool" v={`${fmt(calc.pool)} ${tokenLabel}`} />
-            <Row k="Burned (1%)" v={`${fmt(calc.burn)} ${tokenLabel}`} />
-            <Row k="You pay" v={`${fmt(calc.total)} ${tokenLabel}`} strong />
-            <p className="mt-3 font-display text-xs text-muted">Unclaimed $WIF comes back to you after expiry. The burned 1% does not.</p>
+            <Row k="Gift pool (what claimers share)" v={`${fmt(calc.pool)} ${tokenLabel}`} />
+            <Row k="Burned: 1% added on top" v={`${fmt(calc.burn)} ${tokenLabel}`} />
+            <Row k="You pay in $WIF" v={`${fmt(calc.total)} ${tokenLabel}`} strong />
+            <div className="mt-3 space-y-2 font-body text-sm text-muted">
+              <p>Plus two small network fees in ETH on Robinhood Chain: one to approve exactly this amount, one to create the gift.</p>
+              <p>After it expires, you can reclaim any unclaimed $WIF from My gifts (one more small fee). It doesn’t come back automatically. The burned 1% is gone for good.</p>
+            </div>
           </>
         )}
+        </div>
       </div>
 
-      {error && <p className="mt-4 rounded-xl border border-red-500/40 p-3 text-sm text-red-300">{error}</p>}
+      {error && <p role="alert" className="mt-4 rounded-xl border border-alert/60 p-3 text-sm text-white">{error}</p>}
 
-      <button onClick={create} disabled={!isConnected || busy || 'err' in calc}
-        className="mt-6 w-full rounded-full bg-flat py-3.5 font-medium text-ink disabled:opacity-40">
-        {!isConnected ? 'Connect a wallet first' : step === 'approving' ? 'Approve in your wallet…' : step === 'creating' ? 'Confirm the gift in your wallet…' : 'Create gift'}
-      </button>
+      {!isConnected ? (
+        <div className="mt-6">
+          <p className="mb-3 text-sm text-muted">Connect the wallet that holds your {tokenLabel} to create the gift.</p>
+          <ConnectButton variant="block" />
+        </div>
+      ) : (
+        <button onClick={create} disabled={busy || 'err' in calc}
+          className="mt-6 min-h-11 w-full rounded-full bg-flat py-3.5 font-medium text-ink disabled:opacity-40">
+          {step === 'approving' ? 'Step 1 of 2: approve in your wallet…' : step === 'creating' ? 'Step 2 of 2: confirm the gift in your wallet…' : 'Create gift'}
+        </button>
+      )}
       <TxList chain={chain} txs={txs} />
     </section>
   );

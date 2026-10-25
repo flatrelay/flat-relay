@@ -4,6 +4,7 @@ import Link from 'next/link';
 import './globals.css';
 import { Providers } from './providers';
 import { ConnectButton } from '@/components/ConnectButton';
+import { NavLinks } from '@/components/NavLinks';
 
 // Headlines: Anybody (variable width), slightly widened. Everything else: Hanken Grotesk, normal proportions.
 const display = Anybody({ subsets: ['latin'], variable: '--font-display', axes: ['wdth'] });
@@ -11,8 +12,11 @@ const body = Hanken_Grotesk({ subsets: ['latin'], variable: '--font-body' });
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
-  title: 'FLAT//RELAY',
-  description: 'Send $WIF as something to play. Fund a gift, share a link, and whoever lands the sun claims it on Robinhood Chain.',
+  metadataBase: new URL('https://flat-relay.vercel.app'),
+  title: { default: 'FLAT//RELAY: send $WIF as something to play', template: '%s · FLAT//RELAY' },
+  description: 'Fund a $WIF gift, share one link, and whoever lands the sun on the horizon claims it, gas-free, on Robinhood Chain. Every gift burns 1%.',
+  openGraph: { siteName: 'FLAT//RELAY', type: 'website' },
+  twitter: { card: 'summary_large_image' },
 };
 
 function Wordmark() {
@@ -36,10 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Phone: wordmark + wallet on row one, page links on row two. Desktop: one row. */}
           <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5">
             <Wordmark />
-            <nav className="order-3 flex w-full gap-5 whitespace-nowrap text-sm text-muted sm:order-2 sm:ml-auto sm:w-auto">
-              <Link href="/create" className="hover:text-white">Send</Link>
-              <Link href="/gifts" className="hover:text-white">My gifts</Link>
-              <Link href="/proof" className="hover:text-white">Proof</Link>
+            <nav aria-label="Main" className="order-3 flex w-full gap-5 whitespace-nowrap text-sm text-muted sm:order-2 sm:ml-auto sm:w-auto">
+              <NavLinks />
             </nav>
             <div className="order-2 whitespace-nowrap text-sm sm:order-3">
               <ConnectButton />

@@ -115,6 +115,39 @@ async function scanEvents(chainId: SupportedChainId): Promise<RawLog[]> {
   return next.logs;
 }
 
+/** Block timestamps (unix seconds), cached per process. Blocks never change once final. */
+const timeCache = new Map<string, number>();
+export async function blockTimes(chainId: SupportedChainId, blocks: bigint[]): Promise<Map<bigint, number>> {
+  const client = publicClient(chainId);
+  const todo = Array.from(new Set(blocks.filter((b) => !timeCache.has(`${chainId}:${b}`))));
+  for (let i = 0; i < todo.length; i += 10) {
+    await Promise.all(todo.slice(i, i + 10).map(async (b) => {
+      const blk = await client.getBlock({ blockNumber: b }).catch(() => null);
+      if (blk) timeCache.set(`${chainId}:${b}`, Number(blk.timestamp));
+    }));
+  }
+  const out = new Map<bigint, number>();
+  for (const b of blocks) { const t = timeCache.get(`${chainId}:${b}`); if (t) out.set(b, t); }
+  return out;
+}
+
+/** JSON-safe form of an activity item (bigints as strings), for /api/activity. */
+export type ActivityJSON = { kind: ActivityItem['kind']; campaignId: string; actor: Address; amount: string; burned?: string; tx: Hex; block: string; time?: number };
+export function toJSON(i: ActivityItem, time?: number): ActivityJSON {
+  return { kind: i.kind, campaignId: i.campaignId.toString(), actor: i.actor, amount: i.amount.toString(), burned: i.kind === 'funded' ? i.burned.toString() : undefined, tx: i.tx, block: i.block.toString(), time };
+}
+export function fromJSON(j: ActivityJSON): ActivityItem {
+  const base = { campaignId: BigInt(j.campaignId), actor: j.actor, amount: BigInt(j.amount), tx: j.tx, block: BigInt(j.block) };
+  return j.kind === 'funded' ? { kind: 'funded', ...base, burned: BigInt(j.burned ?? '0'), maxClaims: 0n } : { kind: j.kind, ...base };
+}
+
+/**
+ * Our own wallets (deployer/creator, and the team's second wallet used to test claims).
+ * Activity between them is testing, not adoption, and the Proof page labels it that way.
+ */
+export const TEAM_WALLETS = new Set(['0xbd1abd235bfb3b27491584e07c9b4bfca4aa1562', '0xe298c55a7fe5205c170ba640ee7f659966bf8051']);
+export const isTeam = (a: string) => TEAM_WALLETS.has(a.toLowerCase());
+
 /** Reads every RelayEscrow event straight from the chain. No database. */
 export async function fetchActivity(chainId: SupportedChainId): Promise<ActivityItem[]> {
   const logs = await scanEvents(chainId);
