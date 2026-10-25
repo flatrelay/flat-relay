@@ -8,7 +8,14 @@ import { DEPLOYMENTS, erc20Abi, escrowAbi, publicClient } from '@/lib/relay';
 import { TEMPLATES, friendlyError, giftLink, giftMetadataHash, isSupportedChain, newGiftKey, type Template } from '@/lib/gift';
 
 type Step = 'form' | 'approving' | 'creating' | 'done';
-const DAYS = [1, 3, 7, 14, 30];
+// Expiry choices in seconds. 1 hour is handy for demos and for testing the refund path.
+const EXPIRY = [
+  { label: '1 hour', s: 3600 },
+  { label: '1 day', s: 86400 },
+  { label: '3 days', s: 3 * 86400 },
+  { label: '7 days', s: 7 * 86400 },
+  { label: '30 days', s: 30 * 86400 - 3600 }, // an hour under the contract's 30-day cap
+];
 const fmt = (v: bigint) => Number(formatUnits(v, 18)).toLocaleString('en-US', { maximumFractionDigits: 4 });
 
 export default function CreatePage() {
@@ -21,7 +28,7 @@ export default function CreatePage() {
 
   const [per, setPer] = useState('10');
   const [count, setCount] = useState('1');
-  const [days, setDays] = useState(7);
+  const [expirySecs, setExpirySecs] = useState(7 * 86400);
   const [message, setMessage] = useState('');
   const [template, setTemplate] = useState<Template>('flatline');
   const [step, setStep] = useState<Step>('form');
@@ -70,8 +77,7 @@ export default function CreatePage() {
       }
 
       setStep('creating');
-      const safety = days === 30 ? 3600 : 0; // stay inside the contract's 30-day limit
-      const expiry = BigInt(Math.floor(Date.now() / 1000) + days * 86400 - safety);
+      const expiry = BigInt(Math.floor(Date.now() / 1000) + expirySecs);
       const h2 = await writeContractAsync({
         chainId: chain, address: escrow, abi: escrowAbi, functionName: 'createCampaign',
         args: [perClaim, n, expiry, signer, giftMetadataHash(message, template)],
@@ -126,10 +132,10 @@ export default function CreatePage() {
         </Field>
         <Field label="Expires after" group>
           <div className="flex flex-wrap gap-2">
-            {DAYS.map((d) => (
-              <button key={d} type="button" disabled={busy} onClick={() => setDays(d)}
-                className={`rounded-full border px-4 py-1.5 text-sm ${days === d ? 'border-flat text-flat' : 'border-line text-muted'}`}>
-                {d} day{d > 1 ? 's' : ''}
+            {EXPIRY.map((o) => (
+              <button key={o.s} type="button" disabled={busy} onClick={() => setExpirySecs(o.s)}
+                className={`rounded-full border px-4 py-1.5 text-sm ${expirySecs === o.s ? 'border-flat text-flat' : 'border-line text-muted'}`}>
+                {o.label}
               </button>
             ))}
           </div>

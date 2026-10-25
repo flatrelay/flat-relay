@@ -32,13 +32,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="min-h-screen bg-ink font-body text-white antialiased">
         <Providers>
-          <header className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-5">
+          {/* Phone: wordmark + wallet on row one, page links on row two. Desktop: one row. */}
+          <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5">
             <Wordmark />
-            <nav className="flex items-center gap-4 text-sm text-muted">
+            <nav className="order-3 flex w-full gap-5 whitespace-nowrap text-sm text-muted sm:order-2 sm:ml-auto sm:w-auto">
               <Link href="/create" className="hover:text-white">Send</Link>
+              <Link href="/gifts" className="hover:text-white">My gifts</Link>
               <Link href="/proof" className="hover:text-white">Proof</Link>
-              <ConnectButton />
             </nav>
+            <div className="order-2 whitespace-nowrap text-sm sm:order-3">
+              <ConnectButton />
+            </div>
           </header>
           <main className="mx-auto max-w-5xl px-4 pb-24">{children}</main>
         </Providers>
