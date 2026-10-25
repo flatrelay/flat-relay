@@ -32,3 +32,6 @@
 - Run Foundry suite and fuzz on the Mac.
 - Independent review (fresh-context agent) before mainnet public use, 1 Nov.
 - Verifier and relayer key handling (Vercel env vars), from 26 Oct.
+
+### Relayer rate limits (25 Oct)
+Per-IP 6 per 10 min, per-recipient 3 per hour, daily cap (successful sends only). Shared across Vercel instances via Upstash Redis when `UPSTASH_REDIS_REST_URL/TOKEN` are set; a Redis lock serialises relayer sends. If Redis fails, limits degrade to per-instance memory rather than switching off. The Upstash token is server-only (no `NEXT_PUBLIC_`).

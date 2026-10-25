@@ -5,34 +5,23 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { robinhood, robinhoodTestnet, type SupportedChainId } from './chains';
 import { DEPLOYMENTS, escrowAbi, publicClient } from './relay';
 import { friendlyError, isSupportedChain } from './gift';
+import { bumpDaily, dailyCount, limiterBackend, overLimit, withSendLock } from './ratelimit';
 
 /**
  * Gas-free claims. A hot relayer key (RELAYER_PRIVATE_KEY, server-only env var, small ETH balance)
  * submits claim transactions. It cannot redirect funds: the ticket fixes the recipient.
  * Guards: ticket simulated first, minimum reward per claim, per-IP / per-recipient / daily caps,
- * minimum balance floor. Limits are per server instance (in memory); good enough for the hackathon.
+ * minimum balance floor. Limits and the send lock are shared across instances via Upstash Redis when
+ * configured (see lib/ratelimit.ts), otherwise per instance.
  */
 
 const MIN_REWARD = parseUnits(process.env.RELAYER_MIN_REWARD_WIF ?? '1', 18); // dust gifts can't drain the relayer
 const MIN_BALANCE = parseEther(process.env.RELAYER_MIN_BALANCE_ETH ?? '0.0002');
 const DAILY_CAP = Number(process.env.RELAYER_DAILY_CAP ?? '300');
-const IP_LIMIT = { max: 6, windowMs: 10 * 60_000 };
-const RECIPIENT_LIMIT = { max: 3, windowMs: 60 * 60_000 };
+const IP_LIMIT = { max: 6, windowSec: 10 * 60 };
+const RECIPIENT_LIMIT = { max: 3, windowSec: 60 * 60 };
 const MAX_DEADLINE_AHEAD = 60 * 60; // seconds
 
-const hits = new Map<string, number[]>();
-let day = '';
-let dayCount = 0;
-let sendQueue: Promise<unknown> = Promise.resolve(); // one tx at a time per instance (nonce safety)
-
-function limited(key: string, { max, windowMs }: { max: number; windowMs: number }) {
-  const now = Date.now();
-  const list = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
-  if (list.length >= max) return true;
-  list.push(now);
-  hits.set(key, list);
-  return false;
-}
 
 function relayerAccount() {
   const pk = process.env.RELAYER_PRIVATE_KEY;
@@ -49,7 +38,7 @@ export async function relayerStatus() {
       return { chainId: id, enabled: balance >= MIN_BALANCE };
     }),
   );
-  return { enabled: true as const, address: account.address, minRewardWif: Number(MIN_REWARD / 10n ** 18n), chains };
+  return { enabled: true as const, address: account.address, minRewardWif: Number(MIN_REWARD / 10n ** 18n), limits: limiterBackend(), chains };
 }
 
 export type RelayRequest = { chainId: number; campaignId: string; recipient: string; deadline: string; signature: string };
@@ -71,11 +60,9 @@ export async function relayClaim(body: RelayRequest, ip: string): Promise<{ ok: 
   if (deadline < now || deadline > now + BigInt(MAX_DEADLINE_AHEAD)) return { ok: false, status: 400, error: 'Ticket deadline out of range. Try again.' };
 
   // 2. rate limits
-  const today = new Date().toISOString().slice(0, 10);
-  if (today !== day) { day = today; dayCount = 0; }
-  if (dayCount >= DAILY_CAP) return { ok: false, status: 429, error: 'Gas-free claims are at today’s limit. You can still claim with your own wallet.' };
-  if (limited(`ip:${ip}`, IP_LIMIT)) return { ok: false, status: 429, error: 'Too many claims from this connection. Wait a few minutes.' };
-  if (limited(`to:${chainId}:${recipient.toLowerCase()}`, RECIPIENT_LIMIT)) return { ok: false, status: 429, error: 'Too many attempts for this address. Wait a while.' };
+  if ((await dailyCount()) >= DAILY_CAP) return { ok: false, status: 429, error: 'Gas-free claims are at today’s limit. You can still claim with your own wallet.' };
+  if (await overLimit(`ip:${ip}`, IP_LIMIT.max, IP_LIMIT.windowSec)) return { ok: false, status: 429, error: 'Too many claims from this connection. Wait a few minutes.' };
+  if (await overLimit(`to:${chainId}:${recipient.toLowerCase()}`, RECIPIENT_LIMIT.max, RECIPIENT_LIMIT.windowSec)) return { ok: false, status: 429, error: 'Too many attempts for this address. Wait a while.' };
 
   const client = publicClient(chainId);
   const escrow = DEPLOYMENTS[chainId].escrow;
@@ -99,15 +86,14 @@ export async function relayClaim(body: RelayRequest, ip: string): Promise<{ ok: 
   }
   if (gas > 300_000n) gas = 300_000n;
 
-  // 5. send, one at a time
+  // 5. send, one at a time across all instances (shared lock), so two sends never race for a nonce
   const wallet = createWalletClient({ account, chain: chainId === 4663 ? robinhood : robinhoodTestnet, transport: http() });
-  const send = sendQueue.then(() => wallet.writeContract({ address: escrow, abi: escrowAbi, functionName: 'claim', args, gas }));
-  sendQueue = send.catch(() => {});
   try {
-    const hash = await send;
-    dayCount += 1;
+    const hash = await withSendLock(chainId, () => wallet.writeContract({ address: escrow, abi: escrowAbi, functionName: 'claim', args, gas }));
+    await bumpDaily();
     return { ok: true, hash };
   } catch (e) {
+    if (e instanceof Error && e.message.startsWith('Relayer busy')) return { ok: false, status: 503, error: e.message };
     return { ok: false, status: 502, error: friendlyError(e) };
   }
 }
