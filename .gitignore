@@ -12,3 +12,9 @@ contracts/lib/
 *.tsbuildinfo
 contracts/broadcast/**/dry-run/
 *.recovery.lock
+
+# demo video renders and raw clips (large); scripts and cards stay in git
+video/*.mp4
+video/*.mov
+video/*.m4a
+video/clips/

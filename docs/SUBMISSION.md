@@ -66,6 +66,7 @@ Also next:
 
 ## Links
 - App: https://flat-relay.vercel.app
+- Demo video: plays on the home page (also upload the clean master to YouTube, Unlisted, with the .srt)
 - Proof + relay map: https://flat-relay.vercel.app/proof
 - Code: https://github.com/flatrelay/flat-relay
 - Contract: https://robinhoodchain.blockscout.com/address/0x7EDCfb2efaE4b42B6b3E79e64aB4A8bD677AA426 · https://repo.sourcify.dev/4663/0x7EDCfb2efaE4b42B6b3E79e64aB4A8bD677AA426

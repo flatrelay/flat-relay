@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { formatUnits } from 'viem';
 import { fetchActivity } from '@/lib/relay';
 import { HorizonSun } from '@/components/HorizonSun';
+import { DemoVideo } from '@/components/DemoVideo';
 
 export const revalidate = 60;
 
@@ -45,6 +46,7 @@ export default async function Home() {
             See every transaction
           </Link>
         </div>
+        <DemoVideo />
       </section>
 
       {/* The horizon: full-bleed. The sun rises in and drifts; touch it and it is pushed away from where you touched (sideways, or bounced up / dipped down). */}
