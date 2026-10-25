@@ -38,9 +38,11 @@ export function DemoVideo() {
           href={YOUTUBE_URL}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#FF0033] py-1.5 pl-2.5 pr-3.5 text-xs font-semibold text-white shadow-lg transition hover:bg-[#d9002b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="group inline-flex min-h-9 items-center gap-2 rounded-full border border-white/45 bg-panel/60 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-white transition hover:border-flat focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flat"
         >
-          <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 fill-current"><path d="M8 5.5v13l11-6.5z" /></svg>
+          <span aria-hidden className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#E5323B] transition group-hover:bg-flat group-hover:text-ink">
+            <svg viewBox="0 0 24 24" className="ml-px h-3 w-3 fill-current"><path d="M7 4.5v15l13-7.5z" /></svg>
+          </span>
           Watch on YouTube<span className="sr-only"> (opens in a new tab)</span>
         </a>
         {muted && (
