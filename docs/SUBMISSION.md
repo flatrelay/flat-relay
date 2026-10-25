@@ -3,7 +3,7 @@
 Deadline: **2 Nov 2026 17:30 UTC** (3 Nov 01:30 SGT). Target: 2 Nov 18:00 SGT.
 
 - [ ] Live app URL works on desktop and mobile (https://flat-relay.vercel.app live 25 Oct; mobile check pending)
-- [ ] Verified mainnet RelayEscrow on Blockscout
+- [ ] Verified mainnet RelayEscrow on Blockscout (blocked on Blockscout's side, see PROJECT_STATE 25 Oct 19:25; Sourcify exact match done; reported to support)
 - [x] Real $WIF campaign + claim (incl. gas-free) + refund tx hashes in `TEST_EVIDENCE.md` (25 Oct)
 - [x] Repo public: https://github.com/flatrelay/flat-relay (25 Oct)
 - [ ] Demo video 90–120 s
@@ -38,7 +38,7 @@ FLAT//RELAY turns a $WIF transfer into a moment. You fund a gift in an immutable
 
 ## How it works (technical)
 - `RelayEscrow.sol` (Solidity 0.8.28, OpenZeppelin 5.1): `createCampaign` pulls pool + 1%, checks the received amount, burns the 1%; `claim` takes an EIP-712 ticket (`campaignId, recipient, deadline`) signed by the gift's throwaway key; one claim per address; creator-only `refund` after expiry. No owner, no admin, no upgrade path, no unlimited approvals. 18 Foundry tests incl. fuzz.
-- Mainnet escrow `0x7EDCfb2efaE4b42B6b3E79e64aB4A8bD677AA426`, source verified (Sourcify exact match).
+- Mainnet escrow `0x7EDCfb2efaE4b42B6b3E79e64aB4A8bD677AA426`, source verified on Sourcify (exact match of creation and runtime bytecode): https://repo.sourcify.dev/4663/0x7EDCfb2efaE4b42B6b3E79e64aB4A8bD677AA426
 - Gift key lives only in the URL fragment (`#k=`), which browsers never send to servers. The claim page signs a ticket for the chosen recipient in the browser.
 - Gas-free claims: `/api/relay` simulates first, then submits with a small hot wallet. Guards: min 1 $WIF per claim, per-IP and per-recipient limits and a daily cap shared across instances (Upstash Redis), a cross-instance send lock, balance floor. The relayer cannot change where funds go: the ticket fixes the recipient.
 - Next.js 15 App Router, wagmi/viem, Tailwind, Vercel. No database: the proof page and relay map read contract events directly (chunked `eth_getLogs`).
